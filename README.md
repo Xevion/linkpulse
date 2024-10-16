@@ -11,6 +11,18 @@ This is an empty project right now. It merely holds a simplistic FastAPI server 
 
 ## Setup
 
+### Frontend
+
+1. Install Node.js 22.x
+<!-- TODO: Add details on installation practices, asdf + nvm -->
+3. Install `pnpm` with `npm install -g pnpm`
+4. Install frontend dependencies with `pnpm install`
+5. Start the frontend server with `./run.sh`
+
+<!-- TODO: Get local Caddy server with Vite builds working. -->
+
+### Backend
+
 1. Install [`pyenv`][pyenv] or [`pyenv-win`][pyenv-win]
     
     - Install Python 3.12 (`pyenv install 3.12`)
@@ -20,7 +32,9 @@ This is an empty project right now. It merely holds a simplistic FastAPI server 
     - Requires `pipx`, see [here][pipx]
     - Install with `pipx install poetry`
 
-3. Install backend dependencies with `poetry install`
+3. Install backend dependencies with `poetry install`.
+4. Start the backend server with `./run.sh`
+
 
 ## Usage
 
