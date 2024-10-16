@@ -1,6 +1,12 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
+from dotenv import load_dotenv
+import os
+
+load_dotenv(dotenv_path="../.env")
+
+print(os.environ.get("ENVIRONMENT"))
 
 app = FastAPI()
 
@@ -19,7 +25,7 @@ app.add_middleware(
 
 
 
-@app.get("/")
+@app.get("/api/test")
 async def get_current_time(request: Request):
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
