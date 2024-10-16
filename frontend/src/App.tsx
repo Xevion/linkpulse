@@ -4,7 +4,7 @@ const backendUrl = import.meta.env.PROD ? '/api' : `http://${import.meta.env.VIT
 
 const Code = (props: JSX.IntrinsicElements['code']) => (
   <code
-    className="border-1 2py-1 rounded border border-pink-500 bg-neutral-100 px-1 font-mono font-light text-pink-500 dark:border-pink-400 dark:bg-neutral-700 dark:text-pink-400"
+    className="border-1 mx-1 2py-1 rounded border border-pink-500 bg-neutral-100 px-1 font-mono font-light text-pink-500 dark:border-pink-400 dark:bg-neutral-700 dark:text-pink-400"
     {...props}
   />
 );
@@ -38,7 +38,8 @@ export default function App() {
   }, []);
 
   return (
-    <div className="mx-auto my-8 mt-10 w-8/12 rounded border border-gray-200 p-4 shadow-md dark:border-neutral-600 dark:bg-neutral-800 dark:shadow-none">
+    <div className="min-w-full min-h-full">
+      <div className="mx-auto max-w-md my-8 mt-10 w-8/12 rounded border border-gray-200 p-4 shadow-md dark:border-neutral-600 dark:bg-neutral-800 dark:shadow-none">
       <h1 className="mb-4 text-4xl">LinkPulse</h1>
       <p className="mx-4 my-2">
         The current time is: <Code>{time || 'N/A'}</Code>
@@ -46,6 +47,7 @@ export default function App() {
       <p className="mx-4 my-2">
         Your IP address is: <Code>{clientIp || 'N/A'}</Code>
       </p>
+    </div>
     </div>
   );
 }
