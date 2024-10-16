@@ -23,6 +23,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.get("/health")
+async def health():
+    return "OK"
+
 
 @app.get("/api/test")
 async def get_current_time(request: Request):
