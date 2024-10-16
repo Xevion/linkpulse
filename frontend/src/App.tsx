@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-const backendUrl = `http://${import.meta.env.VITE_BACKEND_TARGET}/api`;
+const backendUrl = import.meta.env.PROD ? '/api' : `http://${import.meta.env.VITE_BACKEND_TARGET}/api`;
 
 const Code = (props: JSX.IntrinsicElements['code']) => (
   <code
