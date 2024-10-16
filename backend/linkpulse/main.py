@@ -1,19 +1,37 @@
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
 
 app = FastAPI()
+
+origins = [
+    "http://localhost",
+    "http://localhost:5173",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 
 @app.get("/")
 async def get_current_time(request: Request):
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
     user_ip = request.headers.get("X-Forwarded-For")
-    return {"time": current_time, "ip": user_ip}
+    if not user_ip:
+        # Fallback, probably not on a proxy
+        user_ip = request.client.host
 
+    response = {"time": current_time, "ip": user_ip}
 
-if __name__ == "__main__":
-    import asyncio
-    from hypercorn.config import Config
-    from hypercorn.asyncio import serve
-
-    asyncio.run(serve(app, Config()))
+    message = request.query_params.get("message")
+    if message:
+        response["message"] = message
+    
+    return response
