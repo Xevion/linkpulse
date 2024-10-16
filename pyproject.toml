@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "linkpulse"
+version = "0.1.0"
+description = ""
+authors = ["Xevion <xevion@xevion.dev>"]
+license = "GNU GPL v3"
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.scripts]
+start = "linkpulse.main:app"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+fastapi = "0.100"
+Hypercorn = "0.14.4"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
