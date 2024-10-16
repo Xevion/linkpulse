@@ -24,7 +24,6 @@ app.add_middleware(
 )
 
 
-
 @app.get("/api/test")
 async def get_current_time(request: Request):
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -39,5 +38,5 @@ async def get_current_time(request: Request):
     message = request.query_params.get("message")
     if message:
         response["message"] = message
-    
+
     return response
