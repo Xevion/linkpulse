@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 
+const backendUrl = `http://${import.meta.env.VITE_BACKEND_TARGET}/api`;
+
 const Code = (props: JSX.IntrinsicElements['code']) => (
   <code
     className="border-1 2py-1 rounded border border-pink-500 bg-neutral-100 px-1 font-mono font-light text-pink-500 dark:border-pink-400 dark:bg-neutral-700 dark:text-pink-400"
@@ -13,7 +15,7 @@ export default function App() {
 
   const refreshData = async () => {
     try {
-      const response = await fetch('');
+      const response = await fetch(`${backendUrl}/test`);
       const data = await response.json();
       const { time, ip } = data;
 
@@ -30,7 +32,7 @@ export default function App() {
 
     const interval = setInterval(() => {
       refreshData();
-    }, 30 * 1000);
+    }, (import.meta.env.DEV ? 1 : 30) * 1000);
 
     return () => clearInterval(interval);
   }, []);
