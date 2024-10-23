@@ -38,17 +38,9 @@ def migrate(migrator: Migrator, database: pw.Database, *, fake=False):
     """Write your migrations here."""
     
     @migrator.create_model
-    class BaseModel(pw.Model):
-        id = pw.AutoField()
-
-        class Meta:
-            table_name = "basemodel"
-
-    @migrator.create_model
     class IPAddress(pw.Model):
         ip = pw.CharField(max_length=255, primary_key=True)
         lastSeen = pw.DateTimeField()
-        test = pw.CharField(default='test', max_length=255)
 
         class Meta:
             table_name = "ipaddress"
@@ -57,6 +49,4 @@ def migrate(migrator: Migrator, database: pw.Database, *, fake=False):
 def rollback(migrator: Migrator, database: pw.Database, *, fake=False):
     """Write your rollback migrations here."""
     
-    migrator.remove_model('basemodel')
-
     migrator.remove_model('ipaddress')
