@@ -3,6 +3,9 @@ import sys
 from typing import Any, List, Optional
 from dotenv import load_dotenv
 from peewee_migrate import Router, router
+from peewee import PostgresqlDatabase
+
+from linkpulse.formatting import pluralize
 
 load_dotenv(dotenv_path=".env")
 
@@ -52,20 +55,56 @@ class ExtendedRouter(Router):
         """
         return [mm.name for mm in self.model.select().order_by(self.model.id)]    
 
-def main(*args):
+def main(*args: str) -> None:
     """
     Main function for running migrations.
     Args are fed directly from sys.argv.
     """
     from linkpulse import models
-    db = models.BaseModel._meta.database
-    router = ExtendedRouter(database=db, migrate_dir='linkpulse/migrations')
-    
+    db: PostgresqlDatabase = models.BaseModel._meta.database
+    router = ExtendedRouter(database=db, migrate_dir='linkpulse/migrations', ignore=[models.BaseModel._meta.table_name])
+    auto = 'linkpulse.models'
+
     # TODO: Show unapplied migrations before applying all
     # TODO: Suggest merging migrations if many are present + all applied
     # TODO: Show prepared migration before naming (+ confirmation option for pre-provided name)
 
+    current = router.all_migrations()
+    if len(current) == 0:
+        diff = router.diff
 
+        if len(diff) == 0:
+            print("No migrations found, no pending migrations to apply. Creating initial migration.")
+
+            migration = router.create('initial', auto=auto)
+            if not migration:
+                print("No changes detected. Something went wrong.")
+            else:
+                print(f"Migration created: {migration}")
+                router.run(migration)
+        else:
+            print("{} migration{} found, applying all ({}).".format(len(diff), pluralize(len(diff)), ', '.join(diff)))
+            applied = router.run()
+            print('Done ({}).'.format(', '.join(applied)))
+    else:
+        print('No migrations found, all migrations applied.')
+
+    migration_available = router.show(auto)
+    if migration_available:
+        print("A migration is available to be applied:")
+        migrate_text, rollback_text = migration_available
+        
+        print("MIGRATION:")
+        for line in migrate_text.split('\n'):
+            if line.strip() == '':
+                continue
+            print('\t' + line)
+        print("ROLLBACK:")
+        for line in rollback_text.split('\n'):
+            if line.strip() == '':
+                continue
+            print('\t' + line)
+    
     # Testing Code:
 """
     print(router.print('linkpulse.models'))
