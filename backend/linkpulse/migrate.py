@@ -1,6 +1,9 @@
+import os
 import pkgutil
+import re
 import sys
-from typing import Any, List, Optional
+import questionary
+from typing import Any, List, Optional, Tuple
 from dotenv import load_dotenv
 from peewee_migrate import Router, router
 from peewee import PostgresqlDatabase
@@ -10,7 +13,7 @@ from linkpulse.formatting import pluralize
 load_dotenv(dotenv_path=".env")
 
 class ExtendedRouter(Router):
-    def show(self, module: str) -> Optional[str]:
+    def show(self, module: str) -> Optional[Tuple[str, str]]:
         """
         Show the suggested migration that will be created, without actually creating it.
 
@@ -65,10 +68,6 @@ def main(*args: str) -> None:
     router = ExtendedRouter(database=db, migrate_dir='linkpulse/migrations', ignore=[models.BaseModel._meta.table_name])
     auto = 'linkpulse.models'
 
-    # TODO: Show unapplied migrations before applying all
-    # TODO: Suggest merging migrations if many are present + all applied
-    # TODO: Show prepared migration before naming (+ confirmation option for pre-provided name)
-
     current = router.all_migrations()
     if len(current) == 0:
         diff = router.diff
@@ -82,15 +81,27 @@ def main(*args: str) -> None:
             else:
                 print(f"Migration created: {migration}")
                 router.run(migration)
-        else:
-            print("{} migration{} found, applying all ({}).".format(len(diff), pluralize(len(diff)), ', '.join(diff)))
-            applied = router.run()
-            print('Done ({}).'.format(', '.join(applied)))
+    
+    diff = router.diff
+    if len(diff) > 0:
+        print('Note: Selecting a migration will apply all migrations up to and including the selected migration.')
+        print('e.g. Applying 004 while only 001 is applied would apply 002, 003, and 004.')
+        
+        choice = questionary.select("Select highest migration to apply:", choices=diff).ask()
+        if choice is None:
+            print("For safety reasons, you won't be able to create migrations without applying the pending ones.")
+            if len(current) == 0:
+                print("Warn: No migrations have been applied globally, which is dangerous. Something may be wrong.")
+            return
+        
+        result = router.run(choice)
+        print(f"Done. Applied migrations: {result}")
+        print("Warning: You should commit and push any new migrations immediately!")
     else:
-        print('No migrations found, all migrations applied.')
+        print("No pending migrations to apply.")
 
     migration_available = router.show(auto)
-    if migration_available:
+    if migration_available is not None:
         print("A migration is available to be applied:")
         migrate_text, rollback_text = migration_available
         
@@ -104,7 +115,36 @@ def main(*args: str) -> None:
             if line.strip() == '':
                 continue
             print('\t' + line)
-    
+        
+        if questionary.confirm("Do you want to create this migration?").ask():
+            print('Lowercase letters and underscores only (e.g. "create_table", "remove_ipaddress_count").')
+            migration_name: Optional[str] = questionary.text("Enter migration name", validate=lambda text: re.match("^[a-z_]+$", text) is not None).ask()
+
+            if migration_name is None:
+                return
+            
+            migration = router.create(migration_name, auto=auto)
+            if migration:
+                print(f"Migration created: {migration}")
+                if len(router.diff) == 1:
+                    if questionary.confirm("Do you want to apply this migration immediately?").ask():
+                        router.run(migration)
+                        print('Done.')
+                        print("!!! Commit and push this migration file immediately!")
+            else:
+                print("No changes detected. Something went wrong.")
+                return
+    else:
+        print("No database changes detected.")
+
+    if len(current) > 5:
+        if questionary.confirm("There are more than 5 migrations applied. Do you want to merge them?", default=False).ask():
+            print("Merging migrations...")
+            router.merge(name="initial")
+            print("Done.")
+
+            print("!!! Commit and push this merged migration file immediately!")
+
     # Testing Code:
 """
     print(router.print('linkpulse.models'))
