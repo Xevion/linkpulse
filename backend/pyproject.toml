@@ -8,14 +8,22 @@ readme = "README.md"
 package-mode = false
 
 [tool.poetry.scripts]
-start = "linkpulse.main"
+app = "linkpulse"
 
 [tool.poetry.dependencies]
 python = "^3.12"
 fastapi = "0.100"
 Hypercorn = "0.14.4"
 python-dotenv = "^1.0.1"
+peewee = "^3.17.7"
+peewee-migrate = "^1.13.0"
+types-peewee = "^3.17.7.20241017"
+types-psycopg2 = "^2.9.21.20241019"
+fastapi-cache2 = "^0.2.2"
 
+
+[tool.poetry.group.dev.dependencies]
+memory-profiler = "^0.61.0"
 
 [build-system]
 requires = ["poetry-core"]
