@@ -1,4 +1,4 @@
-from peewee import Model, CharField, DateTimeField
+from peewee import Model, CharField, DateTimeField, IntegerField
 from playhouse.db_url import connect
 from os import environ
 
@@ -10,3 +10,4 @@ class BaseModel(Model):
 class IPAddress(BaseModel):
     ip = CharField(primary_key=True)
     lastSeen = DateTimeField()
+    count = IntegerField(default=0)
