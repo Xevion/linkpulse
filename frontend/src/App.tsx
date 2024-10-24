@@ -19,16 +19,22 @@ type SeenIP = {
 
 export default function App() {
   const [seenIps, setSeenIps] = useState<SeenIP[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   const refreshData = async () => {
     try {
       const response = await fetch(`${backendUrl}/ips`);
+      if (!response.ok) {
+        throw new Error(`Error: ${response.statusText}`);
+      }
       const data = await response.json();
 
       setSeenIps(data.ips);
+      setError(null); // Clear any previous errors
       console.log('Data fetched:', data);
     } catch (error) {
       console.error('Error fetching data:', error);
+      setError(error.message);
     }
   };
 
@@ -51,6 +57,12 @@ export default function App() {
       <div className="mx-auto my-8 mt-10 w-8/12 max-w-md rounded border border-gray-200 p-4 shadow-md dark:border-neutral-600 dark:bg-neutral-800 dark:shadow-none">
         <h1 className="mb-4 text-3xl">LinkPulse</h1>
 
+        {error && (
+          <div className="mb-4 rounded border border-red-500 bg-red-100 p-2 text-red-700 dark:border-red-800/50 dark:bg-red-950/50 dark:text-red-400">
+            {error}
+          </div>
+        )}
+
         <div className="relative overflow-x-auto">
           <table className="w-full text-left text-sm text-gray-500 rtl:text-right dark:text-gray-300">
             <tbody>
@@ -60,12 +72,11 @@ export default function App() {
                     <Code>{ip.ip}</Code>
                   </td>
                   <td className="py-4">
-                  {ip.count} time{ip.count > 1 ? 's' : ''}
+                    {ip.count} time{ip.count > 1 ? 's' : ''}
                   </td>
                   <td className="py-4">{ip.last_seen}</td>
                 </tr>
               ))}
-            
             </tbody>
           </table>
         </div>
