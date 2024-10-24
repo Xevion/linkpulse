@@ -182,7 +182,7 @@ async def get_ips(request: Request, response: Response):
     return {
         "ips": [
             responses.SeenIP(
-                ip=hide_ip(ip.ip),
+                ip=hide_ip(ip.ip) if ip.ip != user_ip else ip.ip,
                 last_seen=human_readable.date_time(ip.last_seen),
                 count=ip.count,
             )
