@@ -1,26 +1,32 @@
 import { useEffect, useState } from 'react';
 
-const backendUrl = import.meta.env.PROD ? '/api' : `http://${import.meta.env.VITE_BACKEND_TARGET}/api`;
+const backendUrl = import.meta.env.PROD
+  ? '/api'
+  : `http://${import.meta.env.VITE_BACKEND_TARGET}/api`;
 
 const Code = (props: JSX.IntrinsicElements['code']) => (
   <code
-    className="border-1 mx-1 2py-1 rounded border border-pink-500 bg-neutral-100 px-1 font-mono font-light text-pink-500 dark:border-pink-400 dark:bg-neutral-700 dark:text-pink-400"
+    className="border-1 2py-1 mx-1 rounded border border-pink-500 bg-neutral-100 px-1 font-mono font-light text-pink-500 dark:border-pink-400 dark:bg-neutral-700 dark:text-pink-400"
     {...props}
   />
 );
 
+type SeenIP = {
+  last_seen: string;
+  ip: string;
+  count: number;
+};
+
 export default function App() {
-  const [time, setTime] = useState<string | null>(null);
-  const [clientIp, setClientIp] = useState<string | null>(null);
+  const [seenIps, setSeenIps] = useState<SeenIP[]>([]);
 
   const refreshData = async () => {
     try {
-      const response = await fetch(`${backendUrl}/test`);
+      const response = await fetch(`${backendUrl}/ips`);
       const data = await response.json();
-      const { time, ip } = data;
 
-      setTime(time);
-      setClientIp(ip);
+      setSeenIps(data.ips);
+      console.log('Data fetched:', data);
     } catch (error) {
       console.error('Error fetching data:', error);
     }
@@ -30,24 +36,40 @@ export default function App() {
   useEffect(() => {
     refreshData();
 
-    const interval = setInterval(() => {
-      refreshData();
-    }, (import.meta.env.DEV ? 1 : 30) * 1000);
+    const interval = setInterval(
+      () => {
+        refreshData();
+      },
+      (import.meta.env.DEV ? 3 : 30) * 1000,
+    );
 
     return () => clearInterval(interval);
   }, []);
 
   return (
-    <div className="min-w-full min-h-full">
-      <div className="mx-auto max-w-md my-8 mt-10 w-8/12 rounded border border-gray-200 p-4 shadow-md dark:border-neutral-600 dark:bg-neutral-800 dark:shadow-none">
-      <h1 className="mb-4 text-4xl">LinkPulse</h1>
-      <p className="mx-4 my-2">
-        The current time is: <Code>{time || 'N/A'}</Code>
-      </p>
-      <p className="mx-4 my-2">
-        Your IP address is: <Code>{clientIp || 'N/A'}</Code>
-      </p>
-    </div>
+    <div className="min-h-full min-w-full">
+      <div className="mx-auto my-8 mt-10 w-8/12 max-w-md rounded border border-gray-200 p-4 shadow-md dark:border-neutral-600 dark:bg-neutral-800 dark:shadow-none">
+        <h1 className="mb-4 text-3xl">LinkPulse</h1>
+
+        <div className="relative overflow-x-auto">
+          <table className="w-full text-left text-sm text-gray-500 rtl:text-right dark:text-gray-300">
+            <tbody>
+              {seenIps.map((ip) => (
+                <tr key={ip.ip} className="border-b last:border-0 bg-white dark:border-neutral-700 dark:bg-neutral-800">
+                  <td className="py-4">
+                    <Code>{ip.ip}</Code>
+                  </td>
+                  <td className="py-4">
+                  {ip.count} time{ip.count > 1 ? 's' : ''}
+                  </td>
+                  <td className="py-4">{ip.last_seen}</td>
+                </tr>
+              ))}
+            
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 }
