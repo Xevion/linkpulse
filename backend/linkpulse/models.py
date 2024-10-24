@@ -9,5 +9,5 @@ class BaseModel(Model):
 
 class IPAddress(BaseModel):
     ip = CharField(primary_key=True)
-    lastSeen = DateTimeField()
+    last_seen = DateTimeField()
     count = IntegerField(default=0)
