@@ -21,10 +21,13 @@ types-peewee = "^3.17.7.20241017"
 types-psycopg2 = "^2.9.21.20241019"
 fastapi-cache2 = "^0.2.2"
 questionary = "^2.0.1"
+apscheduler = "^3.10.4"
+human-readable = "^1.3.4"
 
 
 [tool.poetry.group.dev.dependencies]
 memory-profiler = "^0.61.0"
+bpython = "^0.24"
 
 [build-system]
 requires = ["poetry-core"]
