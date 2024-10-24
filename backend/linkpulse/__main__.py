@@ -8,11 +8,19 @@ def main(*args):
         from linkpulse.app import app
 
         config = Config()
+        config.use_reloader = True
 
         asyncio.run(serve(app, config))
     elif args[0] == "migrate":
         from linkpulse.migrate import main
         main(*args[1:])
+    elif args[0] == "repl":
+        import linkpulse 
+        lp = linkpulse
+        from linkpulse.app import app, db
+        from linkpulse.models import BaseModel, IPAddress
+        from bpython import embed
+        embed(locals())
     else:
         print("Invalid command: {}".format(args[0]))
 
