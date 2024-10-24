@@ -23,6 +23,7 @@ fastapi-cache2 = "^0.2.2"
 questionary = "^2.0.1"
 apscheduler = "^3.10.4"
 human-readable = "^1.3.4"
+psycopg2 = "^2.9.10"
 
 
 [tool.poetry.group.dev.dependencies]
