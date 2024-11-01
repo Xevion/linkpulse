@@ -36,7 +36,8 @@ asdf install
 
 This installs the version of Node.js specified in [`.tool-versions`](.tool-versions).
 
->[!NOTE] If you use Node.js for other projects, you may want to install the version you need & set it as the global version via `asdf global nodejs <version>` or `asdf install nodejs latest:<version>`. If you don't care, `asdf install latest nodejs` also works.
+> [!NOTE]
+> If you use Node.js for other projects, you may want to install the version you need & set it as the global version via `asdf global nodejs <version>` or `asdf install nodejs latest:<version>`. If you don't care, `asdf install latest nodejs` also works.
 
 2. Install `pnpm` with `npm install -g pnpm`
 3. `cd frontend`
@@ -48,17 +49,17 @@ This installs the version of Node.js specified in [`.tool-versions`](.tool-versi
 ### Backend
 
 1. Install [`pyenv`][pyenv] or [`pyenv-win`][pyenv-win]
-    
-    - Install Python 3.12 (`pyenv install 3.12`)
+
+   - Install Python 3.12 (`pyenv install 3.12`)
 
 2. Install `poetry`
 
-    - Requires `pipx`, see [here][pipx]. You will NOT have this by default. This is NOT `pip`, do not install either with `pip`.
-    - Install with `pipx install poetry`
+   - Requires `pipx`, see [here][pipx]. You will NOT have this by default. This is NOT `pip`, do not install either with `pip`.
+   - Install with `pipx install poetry`
 
 3. Install backend dependencies with `poetry install`.
 4. Start the backend server with `./run.sh`
-5. (*optional*) Install the [Railway CLI][railway]
+5. (_optional_) Install the [Railway CLI][railway]
    - Fastest installation is via shell: `bash <(curl -fsSL cli.new)`
      - Alternatives found [here][railway].
    - This will let us skip creating a local `.env` file, as well as keeping your database URL synchronized.
@@ -66,15 +67,16 @@ This installs the version of Node.js specified in [`.tool-versions`](.tool-versi
 
 ## Usage
 
-A full stack (*frontend* and *backend*), automatically reloading project is possible, but it requires two terminals.
-  
+A full stack (_frontend_ and _backend_), automatically reloading project is possible, but it requires two terminals.
+
 1. Open a terminal in each respective directory (`/backend` and `/frontend`).
 2. Execute `./run.sh` to start the development server for each.
-    - For the backend, you'll either need to have the `railway` CLI installed or a `.env` file with the database URL.
-      - See [`.env.example`](backend/.env.example) for a list of all available environment variables.
-    - For the frontend, the defaults are already sufficient.
+   - For the backend, you'll either need to have the `railway` CLI installed or a `.env` file with the database URL.
+     - See [`.env.example`](backend/.env.example) for a list of all available environment variables.
+   - For the frontend, the defaults are already sufficient.
 
->[!WARNING] The `run.sh` scripts provide default environment variables internally; if you want to run the commands manually, you'll need to provide them to `.env` files or the command line.
+> [!WARNING]
+> The `run.sh` scripts provide default environment variables internally; if you want to run the commands manually, you'll need to provide them to `.env` files or the command line.
 
 [peewee]: https://docs.peewee-orm.com/en/latest/
 [railway]: https://docs.railway.app/guides/cli

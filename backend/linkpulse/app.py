@@ -67,13 +67,12 @@ scheduler.add_job(flush_ips, IntervalTrigger(seconds=5))
 
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
-    if is_development:
-        # 42 is the answer to everything
-        random.seed(42)
-        # Generate a pool of random IP addresses
-        app.state.ip_pool = [
-            ".".join(str(random.randint(0, 255)) for _ in range(4)) for _ in range(50)
-        ]
+    # Originally, this was used to generate a pool of random IP addresses so we could demo a changing list.
+    # Now, this isn't necessary, but I just wanna test it for now. It'll be removed pretty soon.
+    random.seed(42)  # 42 is the answer to everything
+    app.state.ip_pool = [
+        ".".join(str(random.randint(0, 255)) for _ in range(4)) for _ in range(50)
+    ]
 
     # Connect to database, ensure specific tables exist
     db.connect()
