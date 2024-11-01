@@ -4,9 +4,11 @@ import sys
 from typing import List, Optional, Tuple
 
 import questionary
+import structlog
 from dotenv import load_dotenv
 from peewee_migrate import Router, router
 
+logger = structlog.get_logger()
 load_dotenv(dotenv_path=".env")
 
 
@@ -89,23 +91,23 @@ def main(*args: str) -> None:
         diff = router.diff
 
         if len(diff) == 0:
-            print(
+            logger.info(
                 "No migrations found, no pending migrations to apply. Creating initial migration."
             )
 
             migration = router.create("initial", auto=target_models)
             if not migration:
-                print("No changes detected. Something went wrong.")
+                logger.error("No changes detected. Something went wrong.")
             else:
-                print(f"Migration created: {migration}")
+                logger.info(f"Migration created: {migration}")
                 router.run(migration)
 
     diff = router.diff
     if len(diff) > 0:
-        print(
+        logger.info(
             "Note: Selecting a migration will apply all migrations up to and including the selected migration."
         )
-        print(
+        logger.info(
             "e.g. Applying 004 while only 001 is applied would apply 002, 003, and 004."
         )
 
@@ -113,39 +115,35 @@ def main(*args: str) -> None:
             "Select highest migration to apply:", choices=diff
         ).ask()
         if choice is None:
-            print(
+            logger.warning(
                 "For safety reasons, you won't be able to create migrations without applying the pending ones."
             )
             if len(current) == 0:
-                print(
+                logger.warning(
                     "Warn: No migrations have been applied globally, which is dangerous. Something may be wrong."
                 )
             return
 
         result = router.run(choice)
-        print(f"Done. Applied migrations: {result}")
-        print("Warning: You should commit and push any new migrations immediately!")
+        logger.info(f"Done. Applied migrations: {result}")
+        logger.warning("You should commit and push any new migrations immediately!")
     else:
-        print("No pending migrations to apply.")
+        logger.info("No pending migrations to apply.")
 
     migration_available = router.show(target_models)
     if migration_available is not None:
-        print("A migration is available to be applied:")
+        logger.info("A migration is available to be applied:")
         migrate_text, rollback_text = migration_available
 
-        print("MIGRATION:")
-        for line in migrate_text.split("\n"):
-            if line.strip() == "":
-                continue
-            print("\t" + line)
-        print("ROLLBACK:")
-        for line in rollback_text.split("\n"):
-            if line.strip() == "":
-                continue
-            print("\t" + line)
+        def _reformat_text(text: str) -> str:
+            text = [line for line in text.split("\n") if line.strip() != ""]
+            return "\n" + "\n".join([f"{i:02}:\t{line}" for i, line in enumerate(text)])
+
+        logger.info("Migration Content", content=_reformat_text(migrate_text))
+        logger.info("Rollback Content", content=_reformat_text(rollback_text))
 
         if questionary.confirm("Do you want to create this migration?").ask():
-            print(
+            logger.info(
                 'Lowercase letters and underscores only (e.g. "create_table", "remove_ipaddress_count").'
             )
             migration_name: Optional[str] = questionary.text(
@@ -158,50 +156,29 @@ def main(*args: str) -> None:
 
             migration = router.create(migration_name, auto=target_models)
             if migration:
-                print(f"Migration created: {migration}")
+                logger.info(f"Migration created: {migration}")
                 if len(router.diff) == 1:
                     if questionary.confirm(
                         "Do you want to apply this migration immediately?"
                     ).ask():
                         router.run(migration)
-                        print("Done.")
-                        print("!!! Commit and push this migration file immediately!")
+                        logger.info("Done.")
+                        logger.warning(
+                            "!!! Commit and push this migration file immediately!"
+                        )
             else:
-                print("No changes detected. Something went wrong.")
+                logger.error("No changes detected. Something went wrong.")
                 return
     else:
-        print("No database changes detected.")
+        logger.info("No database changes detected.")
 
     if len(current) > 5:
         if questionary.confirm(
             "There are more than 5 migrations applied. Do you want to merge them?",
             default=False,
         ).ask():
-            print("Merging migrations...")
+            logger.info("Merging migrations...")
             router.merge(name="initial")
-            print("Done.")
+            logger.info("Done.")
 
-            print("!!! Commit and push this merged migration file immediately!")
-
-    # Testing Code:
-
-
-"""
-    print(router.print('linkpulse.models'))
-
-    # Create migration
-    print("Creating migration")
-    migration = router.create('test', auto='linkpulse.models')
-    if migration is None:
-        print("No changes detected")
-    else:
-        print(f"Migration Created: {migration}")
-
-        # Run migration/migrations
-        router.run(migration)
-
-    Run all unapplied migrations
-    print("Running all unapplied migrations")
-    applied = router.run()
-    print(f"Applied migrations: {applied}")
-"""
+            logger.warning("Commit and push this merged migration file immediately!")

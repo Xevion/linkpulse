@@ -17,6 +17,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - A `get_db` utility function to retrieve a reference to the database (with type hinting)
 - Minor `DATABASE_URL` check in `models.py` to prevent cryptic connection issues
 
+## Changed
+
+- Migration script now uses `structlog` instead of `print`
+  - Migration script output is tuned to structlog as well.
+- Unspecified IPv6 addresses are returned without hiding in `utilities.hide_ip`
+- Applied `get_db` utility function in all applicable areas.
+
 ### Fixed
 
 - Raised level for `apscheduler.scheduler` logger to `WARNING` to prevent excessive logging
@@ -29,8 +36,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Mildly reformatted `README.md`
 - A development mode check for the `app.state.ip_pool`'s initialization (caused application failure in production only)
-- Applied `get_db` utility function in all applicable areas.
-- Unspecified IPv6 addresses are returned without hiding in `utilities.hide_ip`
 
 ### Fixed
 
