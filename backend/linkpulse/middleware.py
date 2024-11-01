@@ -30,8 +30,9 @@ class LoggingMiddleware(BaseHTTPMiddleware):
             structlog.stdlib.get_logger("api.error").exception("Uncaught exception")
             raise
         finally:
-            process_time = time.perf_counter_ns() - start_time
-            self.access_logger.info(
+            process_time_ms = (time.perf_counter_ns() - start_time) / 10 ** 6
+
+            self.access_logger.debug(
                 "Request",
                 http={
                     "url": str(request.url),
@@ -42,7 +43,7 @@ class LoggingMiddleware(BaseHTTPMiddleware):
                     "version": request.scope["http_version"],
                 },
                 client={"ip": request.client.host, "port": request.client.port} if request.client else None,
-                duration=process_time,
+                duration="{:.2f}ms".format(process_time_ms),
             )
 
             # response.headers["X-Process-Time"] = str(process_time / 10 ** 9)

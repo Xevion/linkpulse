@@ -2,10 +2,12 @@ from typing import Optional
 from fastapi import Request
 
 
-def pluralize(count: int) -> str:
+def pluralize(count: int, word: Optional[str] = None) -> str:
     """
     Pluralize a word based on count. Returns 's' if count is not 1, '' (empty string) otherwise.
     """
+    if word:
+        return word + 's' if count != 1 else word
     return 's' if count != 1 else ''
 
 def get_ip(request: Request) -> Optional[str]:
