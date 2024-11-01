@@ -2,7 +2,6 @@ import sys
 import structlog
 
 
-
 logger = structlog.get_logger()
 
 
@@ -17,7 +16,15 @@ def main(*args):
         run(
             "linkpulse.app:app",
             reload=True,
-            host="0.0.0.0"
+            host="0.0.0.0",
+            log_config={
+                "version": 1,
+                "disable_existing_loggers": False,
+                "loggers": {
+                    "uvicorn": {"propagate": True},
+                    "uvicorn.access": {"propagate": True},
+                },
+            },
         )
 
     elif args[0] == "migrate":

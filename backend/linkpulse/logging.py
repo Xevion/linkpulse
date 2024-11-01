@@ -1,17 +1,16 @@
 import logging
+import os
 import sys
-from typing import List
+from typing import List, Optional
 
 import structlog
 from structlog.types import EventDict, Processor
-from itertools import chain
 
 
 def rename_event_key(_, __, event_dict: EventDict) -> EventDict:
     """
     Renames the `event` key to `msg`, as Railway expects it in that form.
     """
-    print(event_dict)
     event_dict["msg"] = event_dict.pop("event")
     return event_dict
 
@@ -86,17 +85,27 @@ def setup_logging(json_logs: bool = False, log_level: str = "INFO"):
     root_logger.addHandler(handler)
     root_logger.setLevel(log_level.upper())
 
-    def configure_logger(name: str, clear: bool, propagate: bool) -> None:
+    def configure_logger(name: str, level: Optional[str] = None, clear: Optional[bool] = None, propagate: Optional[bool] = None) -> None:
         logger = logging.getLogger(name)
-        if clear:
-            logger.handlers.clear()
-        logger.propagate = propagate
 
-    for _log in ["uvicorn", "uvicorn.error"]:
-        # Clear the log handlers for uvicorn loggers, and enable propagation
-        # so the messages are caught by our root logger and formatted correctly
-        # by structlog
-        configure_logger(_log, clear=True, propagate=False)
+        if level is not None:
+            logger.setLevel(level.upper())
+        
+        if clear is True:
+            logger.handlers.clear()
+        
+        if propagate is not None:
+            logger.propagate = propagate
+        
+
+    # Clear the log handlers for uvicorn loggers, and enable propagation
+    # so the messages are caught by our root logger and formatted correctly
+    # by structlog
+    configure_logger("uvicorn", clear=True, propagate=True)
+    configure_logger("uvicorn.error", clear=True, propagate=True)
+
+    configure_logger("apscheduler.executors.default", level="WARNING")
+
 
     # Since we re-create the access logs ourselves, to add all information
     # in the structured log (see the `logging_middleware` in main.py), we clear

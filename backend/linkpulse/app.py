@@ -24,7 +24,6 @@ from psycopg2.extras import execute_values
 
 from linkpulse.logging import setup_logging
 
-setup_logging(json_logs=False, log_level="DEBUG")
 
 load_dotenv(dotenv_path=".env")
 
@@ -124,6 +123,7 @@ class IPCounter:
 
 app = FastAPI(lifespan=lifespan)
 
+setup_logging()
 
 if is_development:
     from fastapi.middleware.cors import CORSMiddleware
