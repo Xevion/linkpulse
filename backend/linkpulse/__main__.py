@@ -1,3 +1,19 @@
+"""
+This module serves as the entry point for the LinkPulse application. It provides
+command-line interface (CLI) commands to serve the application, run migrations,
+or start a REPL (Read-Eval-Print Loop) session.
+
+Commands:
+- serve: Starts the application server using Uvicorn.
+- migrate: Runs database migrations.
+- repl: Starts an interactive Python shell with pre-imported objects and models.
+"""
+
+from linkpulse.logging import setup_logging
+
+# We want to setup logging as early as possible.
+setup_logging()
+
 import os
 import sys
 import structlog
@@ -7,13 +23,15 @@ logger = structlog.get_logger()
 
 
 def main(*args):
+    """
+    Primary entrypoint for the LinkPulse application
+    - Don't import any modules globally unless you're certain it's necessary. Imports should be tightly controlled.
+    """
     if args[0] == "serve":
-        from linkpulse.logging import setup_logging
         from uvicorn import run
 
-        setup_logging()
-
         logger.debug("Invoking uvicorn.run")
+
         run(
             "linkpulse.app:app",
             reload=True,
@@ -32,7 +50,7 @@ def main(*args):
     elif args[0] == "migrate":
         from linkpulse.migrate import main
 
-        main(*args[1:])
+        main(*args)
     elif args[0] == "repl":
         import linkpulse
 
@@ -46,14 +64,21 @@ def main(*args):
 
         embed(locals())
     else:
-        print("Invalid command: {}".format(args[0]))
+        raise ValueError("Unexpected command: {}".format(" ".join(args)))
 
 
 if __name__ == "__main__":
-    if len(sys.argv) == 1:
+    logger.debug("Entrypoint", argv=sys.argv)
+    args = sys.argv[1:]
+
+    if len(args) == 0:
+        logger.debug("No arguments provided, defaulting to 'serve'")
         main("serve")
     else:
         # Check that args after aren't all whitespace
-        remaining_args = " ".join(sys.argv[1:]).strip()
-        if len(remaining_args) > 0:
-            main(*sys.argv[1:])
+        normalized_args = " ".join(args).strip()
+        if len(normalized_args) == 0:
+            logger.warning("Whitespace arguments provided, defaulting to 'serve'")
+
+        logger.debug("Invoking main with arguments", args=args)
+        main(*args)
