@@ -35,6 +35,7 @@ export default function App() {
     } catch (error) {
       console.error('Error fetching data:', error);
       setError(error.message);
+      setSeenIps([]); // Clear any previous data
     }
   };
 
