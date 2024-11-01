@@ -1,16 +1,19 @@
 import sys
+import structlog
+
+import linkpulse.logging
+logger = structlog.get_logger()
 
 def main(*args):
     if args[0] == "serve":
         import asyncio
-        from hypercorn import Config
-        from hypercorn.asyncio import serve
         from linkpulse.app import app
+        from uvicorn import run
 
-        config = Config()
-        config.use_reloader = True
 
-        asyncio.run(serve(app, config))
+        logger.debug('Invoking uvicorn.run')
+        run('linkpulse.app:app', reload=True, host='0.0.0.0', access_log=True)
+
     elif args[0] == "migrate":
         from linkpulse.migrate import main
 

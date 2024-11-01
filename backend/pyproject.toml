@@ -13,7 +13,6 @@ app = "linkpulse"
 [tool.poetry.dependencies]
 python = "^3.12"
 fastapi = "0.100"
-Hypercorn = "0.14.4"
 python-dotenv = "^1.0.1"
 peewee = "^3.17.7"
 peewee-migrate = "^1.13.0"
@@ -25,6 +24,8 @@ apscheduler = "^3.10.4"
 human-readable = "^1.3.4"
 psycopg2 = "^2.9.10"
 structlog = "^24.4.0"
+uvicorn = "^0.32.0"
+asgi-correlation-id = "^4.3.4"
 
 
 [tool.poetry.group.dev.dependencies]
