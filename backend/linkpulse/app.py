@@ -7,17 +7,21 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import AsyncIterator
 
+import structlog
+import human_readable
+from apscheduler.schedulers.background import BackgroundScheduler  # type: ignore
+from apscheduler.triggers.interval import IntervalTrigger  # type: ignore
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request, Response, status
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.inmemory import InMemoryBackend
 from fastapi_cache.decorator import cache
-import human_readable
 from linkpulse.utilities import get_ip, hide_ip, pluralize
 from peewee import PostgresqlDatabase
 from psycopg2.extras import execute_values
-from apscheduler.schedulers.background import BackgroundScheduler
-from apscheduler.triggers.interval import IntervalTrigger
+
+if not structlog.is_configured():
+    import linkpulse.logging
 
 load_dotenv(dotenv_path=".env")
 
@@ -26,6 +30,8 @@ from linkpulse import models, responses  # type: ignore
 # global variables
 is_development = os.getenv("ENVIRONMENT") == "development"
 db: PostgresqlDatabase = models.BaseModel._meta.database  # type: ignore
+
+logger = structlog.get_logger(__name__)
 
 
 def flush_ips():
@@ -51,10 +57,10 @@ def flush_ips():
             cur = db.cursor()
             execute_values(cur, sql, rows)
     except:
-        print("Failed to flush IPs to the database.")
+        logging.error("Failed to flush IPs to the database.")
 
     i = len(app.state.buffered_updates)
-    print("Flushed {} IP{} to the database.".format(i, pluralize(i)))
+    logging.debug("Flushed {} IP{} to the database.".format(i, pluralize(i)))
 
     # Finish up
     app.state.buffered_updates.clear()
@@ -77,6 +83,19 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     # Connect to database, ensure specific tables exist
     db.connect()
     db.create_tables([models.IPAddress])
+
+    # Delete all randomly generated IP addresses
+    with db.atomic():
+        logging.info(
+            "Deleting Randomized IP Addresses",
+            {"ip_pool_count": len(app.state.ip_pool)},
+        )
+        query = models.IPAddress.delete().where(
+            models.IPAddress.ip << app.state.ip_pool
+        )
+        rowcount = query.execute()
+        logger.info("Randomized IP Addresses deleted", {"rowcount": rowcount})
+
     FastAPICache.init(
         backend=InMemoryBackend(), prefix="fastapi-cache", cache_status_header="X-Cache"
     )
@@ -140,10 +159,6 @@ async def get_migration():
     return {"name": name, "migrated_at": migrated_at}
 
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-
-
 @app.get("/api/ips")
 async def get_ips(request: Request, response: Response):
     """
@@ -152,13 +167,11 @@ async def get_ips(request: Request, response: Response):
     now = datetime.now()
 
     # Get the user's IP address
-    user_ip = (
-        get_ip(request) if not is_development else random.choice(app.state.ip_pool)
-    )
+    user_ip = get_ip(request)
 
     # If the IP address is not found, return an error
     if user_ip is None:
-        print("No IP found!")
+        logging.info("No IP found!")
         response.status_code = status.HTTP_403_FORBIDDEN
         return {"error": "Unable to handle request."}
 
