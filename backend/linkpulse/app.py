@@ -110,7 +110,7 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
 class IPCounter:
     # Note: This is not the true 'seen' count, but the count of how many times the IP has been seen since the last flush.
     count: int = 0
-    last_seen: datetime = field(default_factory=datetime.utcnow)
+    last_seen: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 app = FastAPI(lifespan=lifespan)
@@ -161,7 +161,7 @@ async def get_ips(request: Request, response: Response):
     """
     Returns a list of partially redacted IP addresses, as well as submitting the user's IP address to the database (buffered).
     """
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
 
     # Get the user's IP address
     user_ip = get_ip(request)
