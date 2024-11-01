@@ -1,0 +1,41 @@
+version = 1
+disable_existing_loggers = false
+
+[formatters.default]
+format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
+[formatters.access]
+format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
+[handlers.default]
+formatter = "default"
+class = "logging.StreamHandler"
+stream = "ext://sys.stderr"
+
+[handlers.access]
+formatter = "access"
+class = "logging.StreamHandler"
+stream = "ext://sys.stdout"
+
+[loggers."hypercorn.error"]
+level = "INFO"
+handlers = ["default"]
+propagate = false
+
+[loggers."hypercorn.access"]
+level = "INFO"
+handlers = ["access"]
+propagate = false
+
+[loggers."apscheduler.executors.default"]
+level = "WARN"
+handlers = ["default"]
+
+[loggers."apscheduler.scheduler"]
+level = "WARN"
+handlers = ["default"]
+
+[root]
+level = "DEBUG"
+handlers = ["default"]
+propagate = false
