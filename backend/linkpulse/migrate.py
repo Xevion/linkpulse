@@ -5,18 +5,25 @@ from typing import List, Optional, Tuple
 
 import questionary
 from dotenv import load_dotenv
-from peewee import PostgresqlDatabase
 from peewee_migrate import Router, router
 
 load_dotenv(dotenv_path=".env")
 
 
 class ExtendedRouter(Router):
+    """
+    The original Router class from peewee_migrate didn't have all the functions I needed, so several functions are added here
+
+    Added
+        - show: Show the suggested migration that will be created, without actually creating it
+        - all_migrations: Get all migrations that have been applied
+    """
+
     def show(self, module: str) -> Optional[Tuple[str, str]]:
         """
-        Show the suggested migration that will be created, without actually creating it.
+        Show the suggested migration that will be created, without actually creating it
 
-        :param module: The module to scan & diff against.
+        :param module: The module to scan & diff against
         """
         migrate = rollback = ""
 
@@ -55,7 +62,7 @@ class ExtendedRouter(Router):
 
     def all_migrations(self) -> List[str]:
         """
-        Get all migrations that have been applied.
+        Get all migrations that have been applied
         """
         return [mm.name for mm in self.model.select().order_by(self.model.id)]
 
@@ -65,8 +72,9 @@ def main(*args: str) -> None:
     Main function for running migrations.
     Args are fed directly from sys.argv.
     """
-    from linkpulse import models
     from linkpulse.utilities import get_db
+
+    from linkpulse import models
 
     db = get_db()
     router = ExtendedRouter(
@@ -74,7 +82,7 @@ def main(*args: str) -> None:
         migrate_dir="linkpulse/migrations",
         ignore=[models.BaseModel._meta.table_name],
     )
-    auto = "linkpulse.models"
+    target_models = "linkpulse.models"  # The module to scan for models & changes
 
     current = router.all_migrations()
     if len(current) == 0:
@@ -85,7 +93,7 @@ def main(*args: str) -> None:
                 "No migrations found, no pending migrations to apply. Creating initial migration."
             )
 
-            migration = router.create("initial", auto=auto)
+            migration = router.create("initial", auto=target_models)
             if not migration:
                 print("No changes detected. Something went wrong.")
             else:
@@ -120,7 +128,7 @@ def main(*args: str) -> None:
     else:
         print("No pending migrations to apply.")
 
-    migration_available = router.show(auto)
+    migration_available = router.show(target_models)
     if migration_available is not None:
         print("A migration is available to be applied:")
         migrate_text, rollback_text = migration_available
@@ -148,7 +156,7 @@ def main(*args: str) -> None:
             if migration_name is None:
                 return
 
-            migration = router.create(migration_name, auto=auto)
+            migration = router.create(migration_name, auto=target_models)
             if migration:
                 print(f"Migration created: {migration}")
                 if len(router.diff) == 1:
