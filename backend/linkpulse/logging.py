@@ -24,7 +24,10 @@ def drop_color_message_key(_, __, event_dict: EventDict) -> EventDict:
     return event_dict
 
 
-def setup_logging(json_logs: bool = False, log_level: str = "INFO"):
+def setup_logging(json_logs: Optional[bool] = None, log_level: Optional[str] = None) -> None:
+    json_logs = json_logs or os.getenv("LOG_JSON_FORMAT", "true").lower() == "true"
+    log_level = log_level or os.getenv("LOG_LEVEL", "INFO")
+
     def flatten(n):
         match n:
             case []: return []
