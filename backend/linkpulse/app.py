@@ -58,10 +58,10 @@ def flush_ips():
             cur = db.cursor()
             execute_values(cur, sql, rows)
     except Exception as e:
-        logging.error("Failed to flush IPs to Database", {"error": str(e)})
+        logger.error("Failed to flush IPs to Database", error=e)
 
     i = len(app.state.buffered_updates)
-    logging.debug("Flushed IPs to Database", {"count": i, "ip": pluralize(i, "IP")})
+    logger.debug("Flushed IPs to Database", count=i)
 
     # Finish up
     app.state.buffered_updates.clear()
@@ -173,7 +173,7 @@ async def get_ips(request: Request, response: Response):
 
     # If the IP address is not found, return an error
     if user_ip is None:
-        logging.info("No IP found!")
+        logger.warning("unable to acquire user IP address")
         response.status_code = status.HTTP_403_FORBIDDEN
         return {"error": "Unable to handle request."}
 
