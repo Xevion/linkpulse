@@ -1,5 +1,8 @@
+import os
 from typing import Optional
 from fastapi import Request
+
+is_development = os.getenv("ENVIRONMENT") == "development"
 
 
 def pluralize(count: int, word: Optional[str] = None) -> str:

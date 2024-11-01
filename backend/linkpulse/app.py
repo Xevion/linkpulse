@@ -1,37 +1,31 @@
-import os
 import random
-
 from collections import defaultdict
 from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import AsyncIterator
 
-from asgi_correlation_id import CorrelationIdMiddleware
 import human_readable
 import pytz
+import structlog
 from apscheduler.schedulers.background import BackgroundScheduler  # type: ignore
 from apscheduler.triggers.interval import IntervalTrigger  # type: ignore
+from asgi_correlation_id import CorrelationIdMiddleware
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request, Response, status
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.inmemory import InMemoryBackend
 from fastapi_cache.decorator import cache
-import structlog
-from linkpulse.utilities import get_ip, hide_ip
+from linkpulse.logging import setup_logging
 from linkpulse.middleware import LoggingMiddleware
+from linkpulse.utilities import get_ip, hide_ip, is_development
 from peewee import PostgresqlDatabase
 from psycopg2.extras import execute_values
-
-from linkpulse.logging import setup_logging
-
 
 load_dotenv(dotenv_path=".env")
 
 from linkpulse import models, responses  # type: ignore
 
-# global variables
-is_development = os.getenv("ENVIRONMENT") == "development"
 db: PostgresqlDatabase = models.BaseModel._meta.database  # type: ignore
 
 
