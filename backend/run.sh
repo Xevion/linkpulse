@@ -8,11 +8,11 @@ fi
 
 # Default to development mode if not defined
 export ENVIRONMENT=${ENVIRONMENT:-development}
-COMMAND='poetry run python3 -m linkpulse serve'
+COMMAND='poetry run python3 -m linkpulse'
 
 # Check if Railway CLI is available
 RAILWAY_AVAILABLE=false
-if command -v railway &> /dev/null; then
+if command -v railway &>/dev/null; then
     RAILWAY_AVAILABLE=true
 fi
 
@@ -28,7 +28,7 @@ if [ -n "$DATABASE_URL" ]; then
     DATABASE_DEFINED=true
 else
     if $ENV_FILE_EXISTS; then
-        if grep -E '^DATABASE_URL=.+' .env &> /dev/null; then
+        if grep -E '^DATABASE_URL=.+' .env &>/dev/null; then
             DATABASE_DEFINED=true
         fi
     fi
@@ -37,23 +37,23 @@ fi
 # Check if Railway project is linked
 PROJECT_LINKED=false
 if $RAILWAY_AVAILABLE; then
-    if railway status &> /dev/null; then
+    if railway status &>/dev/null; then
         PROJECT_LINKED=true
     fi
 fi
 
 if $DATABASE_DEFINED; then
-    $COMMAND
+    $COMMAND $@
 else
     if $RAILWAY_AVAILABLE; then
         if $PROJECT_LINKED; then
-            DATABASE_URL="$(railway variables -s Postgres --json | jq .DATABASE_PUBLIC_URL -cMr)" $COMMAND
+            DATABASE_URL="$(railway variables -s Postgres --json | jq .DATABASE_PUBLIC_URL -cMr)" $COMMAND $@
         else
             echo "error: Railway project not linked."
             echo "Run 'railway link' to link the project."
             exit 1
         fi
-        
+
     else
         echo "error: Could not find DATABASE_URL environment variable."
         echo "Install the Railway CLI and link the project, or create a .env file with a DATABASE_URL variable."
