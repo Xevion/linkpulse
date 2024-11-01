@@ -1,3 +1,4 @@
+import os
 import sys
 import structlog
 
@@ -17,6 +18,7 @@ def main(*args):
             "linkpulse.app:app",
             reload=True,
             host="0.0.0.0",
+            port=int(os.getenv("PORT", "8000")),
             log_config={
                 "version": 1,
                 "disable_existing_loggers": False,

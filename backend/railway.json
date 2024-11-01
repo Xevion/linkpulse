@@ -4,6 +4,6 @@
     "builder": "NIXPACKS"
   },
   "deploy": {
-    "startCommand": "hypercorn linkpulse.app:app --bind \"[::]:$PORT\""
+    "startCommand": "python3 -m linkpulse serve"
   }
 }
