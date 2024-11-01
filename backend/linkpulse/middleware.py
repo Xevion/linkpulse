@@ -45,7 +45,6 @@ class LoggingMiddleware(BaseHTTPMiddleware):
                 duration=process_time,
             )
 
-            # TODO: Is this being returned in production? We shouldn't be leaking this.
-            response.headers["X-Process-Time"] = str(process_time / 10 ** 9)
+            # response.headers["X-Process-Time"] = str(process_time / 10 ** 9)
             
             return response
