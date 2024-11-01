@@ -17,6 +17,7 @@ from fastapi import FastAPI, Request, Response, status
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.inmemory import InMemoryBackend
 from fastapi_cache.decorator import cache
+import structlog
 from linkpulse.utilities import get_ip, hide_ip, pluralize
 from linkpulse.middleware import LoggingMiddleware
 from peewee import PostgresqlDatabase
@@ -32,7 +33,6 @@ from linkpulse import models, responses  # type: ignore
 # global variables
 is_development = os.getenv("ENVIRONMENT") == "development"
 db: PostgresqlDatabase = models.BaseModel._meta.database  # type: ignore
-logger = logging.getLogger()
 
 
 def flush_ips():
@@ -57,11 +57,11 @@ def flush_ips():
 
             cur = db.cursor()
             execute_values(cur, sql, rows)
-    except:
-        logging.error("Failed to flush IPs to the database.")
+    except Exception as e:
+        logging.error("Failed to flush IPs to Database", {"error": str(e)})
 
     i = len(app.state.buffered_updates)
-    logging.debug("Flushed {} IP{} to the database.".format(i, pluralize(i)))
+    logging.debug("Flushed IPs to Database", {"count": i, "ip": pluralize(i, "IP")})
 
     # Finish up
     app.state.buffered_updates.clear()
@@ -87,15 +87,12 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
 
     # Delete all randomly generated IP addresses
     with db.atomic():
-        logger.info(
-            "Deleting Randomized IP Addresses",
-            {"ip_pool_count": len(app.state.ip_pool)},
-        )
+        logger.info("Deleting Randomized IP Addresses", ip_pool_count=len(app.state.ip_pool))
         query = models.IPAddress.delete().where(
             models.IPAddress.ip << app.state.ip_pool
         )
         row_count = query.execute()
-        logger.info("Randomized IP Addresses deleted", {"row_count": row_count})
+        logger.info("Randomized IP Addresses deleted", row_count=row_count)
 
     FastAPICache.init(
         backend=InMemoryBackend(), prefix="fastapi-cache", cache_status_header="X-Cache"
@@ -124,6 +121,8 @@ class IPCounter:
 app = FastAPI(lifespan=lifespan)
 
 setup_logging()
+
+logger = structlog.get_logger()
 
 if is_development:
     from fastapi.middleware.cors import CORSMiddleware
