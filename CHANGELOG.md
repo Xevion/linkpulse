@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- Improved documentation in `__main__.py` entrypoint file.
+
+### Fixed
+
+- IPv4 interface bind in production, preventing Railway's Private Networking from functioning.
+- Reloader mode enabled in production
+
 ## [0.2.1] - 2024-11-01
 
 ### Changed
