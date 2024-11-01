@@ -9,11 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Improved documentation in `__main__.py` entrypoint file.
+- Improved documentation in multiple areas
+  - `__main__.py`
+  - `logging.py`
 
 ### Fixed
 
-- IPv4 interface bind in production, preventing Railway's Private Networking from functioning.
+- Raised level for `apscheduler.scheduler` logger to `WARNING` to prevent excessive logging
+- IPv4 interface bind in production, preventing Railway's Private Networking from functioning
 - Reloader mode enabled in production
 
 ## [0.2.1] - 2024-11-01
@@ -31,7 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- This `CHANGELOG.md` file.
+- This `CHANGELOG.md` file
 - Structured logging with `structlog`
   - Readable `ConsoleRenderer` for local development
   - `JSONRenderer` for production logging

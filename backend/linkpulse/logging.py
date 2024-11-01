@@ -126,7 +126,10 @@ def setup_logging(
     configure_logger("uvicorn", clear=True, propagate=True)
     configure_logger("uvicorn.error", clear=True, propagate=True)
 
+    # Disable the apscheduler loggers, as they are too verbose
+    # TODO: This should be configurable easily from a TOML or YAML file
     configure_logger("apscheduler.executors.default", level="WARNING")
+    configure_logger("apscheduler.scheduler", level="WARNING")
 
     # Since we re-create the access logs ourselves, to add all information
     # in the structured log (see the `logging_middleware` in main.py), we clear
