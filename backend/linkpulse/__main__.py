@@ -28,14 +28,17 @@ def main(*args):
     - Don't import any modules globally unless you're certain it's necessary. Imports should be tightly controlled.
     """
     if args[0] == "serve":
+        from linkpulse.utilities import is_development
         from uvicorn import run
 
         logger.debug("Invoking uvicorn.run")
 
         run(
             "linkpulse.app:app",
-            reload=True,
-            host="0.0.0.0",
+            reload=is_development,
+            # Both options are special IP addresses that allow the server to listen on all network interfaces. One is for IPv4, the other for IPv6.
+            # Railway's private networking requires IPv6, so we must use that in production.
+            host="0.0.0.0" if is_development else "::",
             port=int(os.getenv("PORT", "8000")),
             log_config={
                 "version": 1,
