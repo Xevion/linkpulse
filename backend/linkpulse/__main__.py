@@ -59,8 +59,11 @@ def main(*args):
 
         # import most useful objects, models, and functions
         lp = linkpulse  # alias
-        from linkpulse.app import app, db
+        from linkpulse.utilities import get_db
+        from linkpulse.app import app
         from linkpulse.models import BaseModel, IPAddress
+
+        db = get_db()
 
         # start REPL
         from bpython import embed  # type: ignore

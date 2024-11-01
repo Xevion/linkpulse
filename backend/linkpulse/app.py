@@ -18,19 +18,19 @@ from fastapi_cache.backends.inmemory import InMemoryBackend
 from fastapi_cache.decorator import cache
 from linkpulse.logging import setup_logging
 from linkpulse.middleware import LoggingMiddleware
-from linkpulse.utilities import get_ip, hide_ip, is_development
-from peewee import PostgresqlDatabase
+from linkpulse.utilities import get_ip, hide_ip, is_development, get_db
 from psycopg2.extras import execute_values
 
 load_dotenv(dotenv_path=".env")
 
 from linkpulse import models, responses  # type: ignore
 
-db: PostgresqlDatabase = models.BaseModel._meta.database  # type: ignore
+db = get_db()
 
 
 def flush_ips():
     if len(app.state.buffered_updates) == 0:
+        logger.debug("No IPs to flush to Database")
         return
 
     try:
@@ -55,7 +55,7 @@ def flush_ips():
         logger.error("Failed to flush IPs to Database", error=e)
 
     i = len(app.state.buffered_updates)
-    logger.debug("Flushed IPs to Database", count=i)
+    logger.debug("IPs written to database", count=i)
 
     # Finish up
     app.state.buffered_updates.clear()

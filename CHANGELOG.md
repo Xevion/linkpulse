@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved documentation in multiple areas
   - `__main__.py`
   - `logging.py`
+- A `get_db` utility function to retrieve a reference to the database (with type hinting).
 
 ### Fixed
 
@@ -25,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Mildly reformatted `README.md`
 - A development mode check for the `app.state.ip_pool`'s initialization (caused application failure in production only)
+- Applied `get_db` utility function in all applicable areas.
 
 ### Fixed
 

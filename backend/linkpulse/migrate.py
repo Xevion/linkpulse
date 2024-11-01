@@ -66,8 +66,9 @@ def main(*args: str) -> None:
     Args are fed directly from sys.argv.
     """
     from linkpulse import models
+    from linkpulse.utilities import get_db
 
-    db: PostgresqlDatabase = models.BaseModel._meta.database
+    db = get_db()
     router = ExtendedRouter(
         database=db,
         migrate_dir="linkpulse/migrations",

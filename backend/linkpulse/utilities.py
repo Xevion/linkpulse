@@ -1,8 +1,21 @@
 import os
 from typing import Optional
 from fastapi import Request
+from peewee import PostgresqlDatabase
 
 is_development = os.getenv("ENVIRONMENT") == "development"
+
+
+def get_db() -> PostgresqlDatabase:
+    """
+    Acquires the database connector from the BaseModel class.
+    This is not a cursor, but a connection to the database.
+    """
+
+    # Might not be necessary, but I'd prefer to not import heavy modules with side effects in a utility module.
+    from linkpulse import models
+
+    return models.BaseModel._meta.database  # type: ignore
 
 
 def pluralize(count: int, word: Optional[str] = None) -> str:
