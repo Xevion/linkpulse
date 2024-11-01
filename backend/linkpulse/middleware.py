@@ -2,6 +2,7 @@ import time
 from asgi_correlation_id import correlation_id
 import structlog
 
+from linkpulse.utilities import is_development
 from fastapi import FastAPI, Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 
@@ -29,7 +30,9 @@ class LoggingMiddleware(BaseHTTPMiddleware):
             structlog.stdlib.get_logger("api.error").exception("Uncaught exception")
             raise
         finally:
-            process_time_ms = (time.perf_counter_ns() - start_time) / 10**6
+            process_time_ms = "{:.2f}".format(
+                (time.perf_counter_ns() - start_time) / 10**6
+            )
 
             self.access_logger.debug(
                 "Request",
@@ -46,9 +49,10 @@ class LoggingMiddleware(BaseHTTPMiddleware):
                     if request.client
                     else None
                 ),
-                duration="{:.2f}ms".format(process_time_ms),
+                duration_ms=process_time_ms,
             )
 
-            # response.headers["X-Process-Time"] = str(process_time / 10 ** 9)
+            if is_development:
+                response.headers["X-Process-Time"] = process_time_ms
 
             return response
