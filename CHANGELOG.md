@@ -9,10 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Improved documentation in multiple areas
+- Improved documentation in multiple files
   - `__main__.py`
   - `logging.py`
-- A `get_db` utility function to retrieve a reference to the database (with type hinting).
+  - `models.py`
+- A `get_db` utility function to retrieve a reference to the database (with type hinting)
+- Minor `DATABASE_URL` check in `models.py` to prevent cryptic connection issues
 
 ### Fixed
 
