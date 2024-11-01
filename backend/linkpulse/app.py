@@ -23,8 +23,9 @@ load_dotenv(dotenv_path=".env")
 
 from linkpulse import models, responses  # type: ignore
 
+# global variables
 is_development = os.getenv("ENVIRONMENT") == "development"
-db: PostgresqlDatabase = models.BaseModel._meta.database
+db: PostgresqlDatabase = models.BaseModel._meta.database  # type: ignore
 
 
 def flush_ips():
@@ -65,10 +66,6 @@ scheduler.add_job(flush_ips, IntervalTrigger(seconds=5))
 
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
-    FastAPICache.init(
-        backend=InMemoryBackend(), prefix="fastapi-cache", cache_status_header="X-Cache"
-    )
-
     if is_development:
         # 42 is the answer to everything
         random.seed(42)
@@ -76,6 +73,13 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
         app.state.ip_pool = [
             ".".join(str(random.randint(0, 255)) for _ in range(4)) for _ in range(50)
         ]
+
+    # Connect to database, ensure specific tables exist
+    db.connect()
+    db.create_tables([models.IPAddress])
+    FastAPICache.init(
+        backend=InMemoryBackend(), prefix="fastapi-cache", cache_status_header="X-Cache"
+    )
 
     app.state.buffered_updates = defaultdict(IPCounter)
 
@@ -85,6 +89,9 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
 
     scheduler.shutdown()
     flush_ips()
+
+    if not db.is_closed():
+        db.close()
 
 
 @dataclass
@@ -112,18 +119,6 @@ if is_development:
         allow_methods=["*"],
         allow_headers=["*"],
     )
-
-
-@app.on_event("startup")
-def startup():
-    db.connect()
-    db.create_tables([models.IPAddress])
-
-
-@app.on_event("shutdown")
-def shutdown():
-    if not db.is_closed():
-        db.close()
 
 
 @app.get("/health")
