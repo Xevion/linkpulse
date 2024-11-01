@@ -1,13 +1,14 @@
 import logging
 import os
 import random
+
 from collections import defaultdict
 from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import AsyncIterator
 
-import structlog
+from asgi_correlation_id import CorrelationIdMiddleware
 import human_readable
 from apscheduler.schedulers.background import BackgroundScheduler  # type: ignore
 from apscheduler.triggers.interval import IntervalTrigger  # type: ignore
@@ -17,11 +18,13 @@ from fastapi_cache import FastAPICache
 from fastapi_cache.backends.inmemory import InMemoryBackend
 from fastapi_cache.decorator import cache
 from linkpulse.utilities import get_ip, hide_ip, pluralize
+from linkpulse.middleware import LoggingMiddleware
 from peewee import PostgresqlDatabase
 from psycopg2.extras import execute_values
 
-if not structlog.is_configured():
-    import linkpulse.logging
+from linkpulse.logging import setup_logging
+
+setup_logging(json_logs=False, log_level="DEBUG")
 
 load_dotenv(dotenv_path=".env")
 
@@ -30,8 +33,7 @@ from linkpulse import models, responses  # type: ignore
 # global variables
 is_development = os.getenv("ENVIRONMENT") == "development"
 db: PostgresqlDatabase = models.BaseModel._meta.database  # type: ignore
-
-logger = structlog.get_logger(__name__)
+logger = logging.getLogger()
 
 
 def flush_ips():
@@ -86,15 +88,15 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
 
     # Delete all randomly generated IP addresses
     with db.atomic():
-        logging.info(
+        logger.info(
             "Deleting Randomized IP Addresses",
             {"ip_pool_count": len(app.state.ip_pool)},
         )
         query = models.IPAddress.delete().where(
             models.IPAddress.ip << app.state.ip_pool
         )
-        rowcount = query.execute()
-        logger.info("Randomized IP Addresses deleted", {"rowcount": rowcount})
+        row_count = query.execute()
+        logger.info("Randomized IP Addresses deleted", {"row_count": row_count})
 
     FastAPICache.init(
         backend=InMemoryBackend(), prefix="fastapi-cache", cache_status_header="X-Cache"
@@ -126,18 +128,19 @@ app = FastAPI(lifespan=lifespan)
 if is_development:
     from fastapi.middleware.cors import CORSMiddleware
 
-    origins = [
-        "http://localhost",
-        "http://localhost:5173",
-    ]
-
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=origins,
+        allow_origins=[
+            "http://localhost",
+            "http://localhost:5173",
+        ],
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+app.add_middleware(LoggingMiddleware)
+app.add_middleware(CorrelationIdMiddleware)
 
 
 @app.get("/health")

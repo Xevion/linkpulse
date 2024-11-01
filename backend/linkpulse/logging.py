@@ -3,59 +3,119 @@ import sys
 from typing import List
 
 import structlog
-from structlog.stdlib import ProcessorFormatter
-from structlog.types import Processor
-
-shared_processors: List[Processor] = [
-    structlog.stdlib.add_log_level,
-    structlog.processors.CallsiteParameterAdder(
-        {
-            structlog.processors.CallsiteParameter.MODULE,
-            structlog.processors.CallsiteParameter.FILENAME,
-            structlog.processors.CallsiteParameter.LINENO,
-        }
-    ),
-    structlog.processors.TimeStamper(fmt="%Y-%m-%d %H:%M:%S.%f"),
-]
-
-structlog_processors = shared_processors + []
-# Remove _record & _from_structlog.
-logging_processors: List[Processor] = [ProcessorFormatter.remove_processors_meta]
-
-if sys.stderr.isatty():
-    console_renderer = structlog.dev.ConsoleRenderer()
-    logging_processors.append(console_renderer)
-    structlog_processors.append(console_renderer)
-else:
-    json_renderer = structlog.processors.JSONRenderer(indent=1, sort_keys=True)
-    structlog_processors.append(json_renderer)
-    logging_processors.append(json_renderer)
-
-structlog.configure(
-    processors=structlog_processors,
-    wrapper_class=structlog.stdlib.BoundLogger,
-    # logger_factory=structlog.stdlib.LoggerFactory(),
-    logger_factory=structlog.PrintLoggerFactory(sys.stderr),
-    context_class=dict,
-    cache_logger_on_first_use=True,
-)
+from structlog.types import EventDict, Processor
+from itertools import chain
 
 
-formatter = ProcessorFormatter(
-    # These run ONLY on `logging` entries that do NOT originate within
-    # structlog.
-    foreign_pre_chain=shared_processors,
-    # These run on ALL entries after the pre_chain is done.
-    processors=logging_processors,
-)
+def rename_event_key(_, __, event_dict: EventDict) -> EventDict:
+    """
+    Renames the `event` key to `msg`, as Railway expects it in that form.
+    """
+    print(event_dict)
+    event_dict["msg"] = event_dict.pop("event")
+    return event_dict
 
-handler = logging.StreamHandler(sys.stderr)
-# Use OUR `ProcessorFormatter` to format all `logging` entries.
-handler.setFormatter(formatter)
-logging.basicConfig(handlers=[handler], level=logging.INFO)
 
-external_loggers = ["uvicorn.error", "uvicorn.access"]
-for logger_name in external_loggers:
-    logger = logging.getLogger(logger_name)
-    logger.handlers = [handler]
-    logger.propagate = False
+def drop_color_message_key(_, __, event_dict: EventDict) -> EventDict:
+    """
+    Uvicorn logs the message a second time in the extra `color_message`, but we don't
+    need it. This processor drops the key from the event dict if it exists.
+    """
+    event_dict.pop("color_message", None)
+    return event_dict
+
+
+def setup_logging(json_logs: bool = False, log_level: str = "INFO"):
+    def flatten(n):
+        match n:
+            case []: return []
+            case [[*hd], *tl]: return [*flatten(hd), *flatten(tl)]
+            case [hd, *tl]: return [hd, *flatten(tl)]
+
+    shared_processors: List[Processor] = flatten([
+        structlog.contextvars.merge_contextvars,
+        structlog.stdlib.add_logger_name,
+        structlog.stdlib.add_log_level,
+        structlog.stdlib.PositionalArgumentsFormatter(),
+        structlog.stdlib.ExtraAdder(),
+        drop_color_message_key,
+        structlog.processors.TimeStamper(fmt="iso"),
+        structlog.processors.StackInfoRenderer(),
+        (
+            [
+                rename_event_key,
+                # Format the exception only for JSON logs, as we want to pretty-print them when using the ConsoleRenderer
+                structlog.processors.format_exc_info,
+            ]
+            if json_logs
+            else []
+        ),
+    ])
+
+    structlog.configure(
+        processors=[
+            *shared_processors,
+            # Prepare event dict for `ProcessorFormatter`.
+            structlog.stdlib.ProcessorFormatter.wrap_for_formatter,
+        ],
+        logger_factory=structlog.stdlib.LoggerFactory(),
+        cache_logger_on_first_use=True,
+    )
+
+    log_renderer: structlog.types.Processor
+    if json_logs:
+        log_renderer = structlog.processors.JSONRenderer()
+    else:
+        log_renderer = structlog.dev.ConsoleRenderer()
+
+    formatter = structlog.stdlib.ProcessorFormatter(
+        # These run ONLY on `logging` entries that do NOT originate within structlog.
+        foreign_pre_chain=shared_processors,
+        # These run on ALL entries after the pre_chain is done.
+        processors=[
+            # Remove _record & _from_structlog.
+            structlog.stdlib.ProcessorFormatter.remove_processors_meta,
+            log_renderer,
+        ],
+    )
+
+    handler = logging.StreamHandler()
+    # Use OUR `ProcessorFormatter` to format all `logging` entries.
+    handler.setFormatter(formatter)
+    root_logger = logging.getLogger()
+    root_logger.addHandler(handler)
+    root_logger.setLevel(log_level.upper())
+
+    def configure_logger(name: str, clear: bool, propagate: bool) -> None:
+        logger = logging.getLogger(name)
+        if clear:
+            logger.handlers.clear()
+        logger.propagate = propagate
+
+    for _log in ["uvicorn", "uvicorn.error"]:
+        # Clear the log handlers for uvicorn loggers, and enable propagation
+        # so the messages are caught by our root logger and formatted correctly
+        # by structlog
+        configure_logger(_log, clear=True, propagate=False)
+
+    # Since we re-create the access logs ourselves, to add all information
+    # in the structured log (see the `logging_middleware` in main.py), we clear
+    # the handlers and prevent the logs to propagate to a logger higher up in the
+    # hierarchy (effectively rendering them silent).
+    configure_logger("uvicorn.access", clear=True, propagate=False)
+
+    def handle_exception(exc_type, exc_value, exc_traceback):
+        """
+        Log any uncaught exception instead of letting it be printed by Python
+        (but leave KeyboardInterrupt untouched to allow users to Ctrl+C to stop)
+        See https://stackoverflow.com/a/16993115/3641865
+        """
+        if issubclass(exc_type, KeyboardInterrupt):
+            sys.__excepthook__(exc_type, exc_value, exc_traceback)
+            return
+
+        root_logger.error(
+            "Uncaught exception", exc_info=(exc_type, exc_value, exc_traceback)
+        )
+
+    sys.excepthook = handle_exception

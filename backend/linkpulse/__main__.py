@@ -1,18 +1,24 @@
 import sys
 import structlog
 
-import linkpulse.logging
+
+
 logger = structlog.get_logger()
+
 
 def main(*args):
     if args[0] == "serve":
-        import asyncio
-        from linkpulse.app import app
+        from linkpulse.logging import setup_logging
         from uvicorn import run
 
+        setup_logging()
 
-        logger.debug('Invoking uvicorn.run')
-        run('linkpulse.app:app', reload=True, host='0.0.0.0', access_log=True)
+        logger.debug("Invoking uvicorn.run")
+        run(
+            "linkpulse.app:app",
+            reload=True,
+            host="0.0.0.0"
+        )
 
     elif args[0] == "migrate":
         from linkpulse.migrate import main
@@ -27,7 +33,8 @@ def main(*args):
         from linkpulse.models import BaseModel, IPAddress
 
         # start REPL
-        from bpython import embed
+        from bpython import embed  # type: ignore
+
         embed(locals())
     else:
         print("Invalid command: {}".format(args[0]))
