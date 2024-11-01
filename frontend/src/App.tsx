@@ -66,17 +66,22 @@ export default function App() {
         <div className="relative overflow-x-auto">
           <table className="w-full text-left text-sm text-gray-500 rtl:text-right dark:text-gray-300">
             <tbody>
-              {seenIps.map((ip) => (
-                <tr key={ip.ip} className="border-b last:border-0 bg-white dark:border-neutral-700 dark:bg-neutral-800">
-                  <td className="py-4">
-                    <Code>{ip.ip}</Code>
-                  </td>
-                  <td className="py-4">
-                    {ip.count} time{ip.count > 1 ? 's' : ''}
-                  </td>
-                  <td className="py-4">{ip.last_seen}</td>
-                </tr>
-              ))}
+              {error == null
+                ? seenIps.map((ip) => (
+                    <tr
+                      key={ip.ip}
+                      className="border-b bg-white last:border-0 dark:border-neutral-700 dark:bg-neutral-800"
+                    >
+                      <td className="py-4">
+                        <Code>{ip.ip}</Code>
+                      </td>
+                      <td className="py-4">
+                        {ip.count} time{ip.count > 1 ? 's' : ''}
+                      </td>
+                      <td className="py-4">{ip.last_seen}</td>
+                    </tr>
+                  ))
+                : null}
             </tbody>
           </table>
         </div>

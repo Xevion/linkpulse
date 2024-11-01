@@ -1,5 +1,17 @@
 {
-    "python.analysis.extraPaths": [
-        "./backend/"
-    ]
+  "cSpell.words": [
+    "apscheduler",
+    "bpython",
+    "Callsite",
+    "excepthook",
+    "inmemory",
+    "linkpulse",
+    "migratehistory",
+    "Nixpacks",
+    "pytz",
+    "starlette",
+    "structlog",
+    "timestamper"
+  ],
+  "python.analysis.extraPaths": ["./backend/"]
 }

@@ -1,31 +1,32 @@
-import logging
-import os
 import random
 from collections import defaultdict
 from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import AsyncIterator
 
+import human_readable
+import pytz
+import structlog
+from apscheduler.schedulers.background import BackgroundScheduler  # type: ignore
+from apscheduler.triggers.interval import IntervalTrigger  # type: ignore
+from asgi_correlation_id import CorrelationIdMiddleware
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request, Response, status
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.inmemory import InMemoryBackend
 from fastapi_cache.decorator import cache
-import human_readable
-from linkpulse.utilities import get_ip, hide_ip, pluralize
+from linkpulse.logging import setup_logging
+from linkpulse.middleware import LoggingMiddleware
+from linkpulse.utilities import get_ip, hide_ip, is_development
 from peewee import PostgresqlDatabase
 from psycopg2.extras import execute_values
-from apscheduler.schedulers.background import BackgroundScheduler
-from apscheduler.triggers.interval import IntervalTrigger
 
 load_dotenv(dotenv_path=".env")
 
 from linkpulse import models, responses  # type: ignore
 
-is_development = os.getenv("ENVIRONMENT") == "development"
-db: PostgresqlDatabase = models.BaseModel._meta.database
+db: PostgresqlDatabase = models.BaseModel._meta.database  # type: ignore
 
 
 def flush_ips():
@@ -50,11 +51,11 @@ def flush_ips():
 
             cur = db.cursor()
             execute_values(cur, sql, rows)
-    except:
-        print("Failed to flush IPs to the database.")
+    except Exception as e:
+        logger.error("Failed to flush IPs to Database", error=e)
 
     i = len(app.state.buffered_updates)
-    print("Flushed {} IP{} to the database.".format(i, pluralize(i)))
+    logger.debug("Flushed IPs to Database", count=i)
 
     # Finish up
     app.state.buffered_updates.clear()
@@ -66,10 +67,6 @@ scheduler.add_job(flush_ips, IntervalTrigger(seconds=5))
 
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
-    FastAPICache.init(
-        backend=InMemoryBackend(), prefix="fastapi-cache", cache_status_header="X-Cache"
-    )
-
     if is_development:
         # 42 is the answer to everything
         random.seed(42)
@@ -77,6 +74,25 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
         app.state.ip_pool = [
             ".".join(str(random.randint(0, 255)) for _ in range(4)) for _ in range(50)
         ]
+
+    # Connect to database, ensure specific tables exist
+    db.connect()
+    db.create_tables([models.IPAddress])
+
+    # Delete all randomly generated IP addresses
+    with db.atomic():
+        logger.info(
+            "Deleting Randomized IP Addresses", ip_pool_count=len(app.state.ip_pool)
+        )
+        query = models.IPAddress.delete().where(
+            models.IPAddress.ip << app.state.ip_pool
+        )
+        row_count = query.execute()
+        logger.info("Randomized IP Addresses deleted", row_count=row_count)
+
+    FastAPICache.init(
+        backend=InMemoryBackend(), prefix="fastapi-cache", cache_status_header="X-Cache"
+    )
 
     app.state.buffered_updates = defaultdict(IPCounter)
 
@@ -87,42 +103,39 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     scheduler.shutdown()
     flush_ips()
 
+    if not db.is_closed():
+        db.close()
+
 
 @dataclass
 class IPCounter:
     # Note: This is not the true 'seen' count, but the count of how many times the IP has been seen since the last flush.
     count: int = 0
-    last_seen: datetime = field(default_factory=datetime.now)
+    last_seen: datetime = field(default_factory=datetime.utcnow)
 
 
 app = FastAPI(lifespan=lifespan)
 
+setup_logging()
+
+logger = structlog.get_logger()
 
 if is_development:
-    origins = [
-        "http://localhost",
-        "http://localhost:5173",
-    ]
+    from fastapi.middleware.cors import CORSMiddleware
 
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=origins,
+        allow_origins=[
+            "http://localhost",
+            "http://localhost:5173",
+        ],
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
     )
 
-
-@app.on_event("startup")
-def startup():
-    db.connect()
-    db.create_tables([models.IPAddress])
-
-
-@app.on_event("shutdown")
-def shutdown():
-    if not db.is_closed():
-        db.close()
+app.add_middleware(LoggingMiddleware)
+app.add_middleware(CorrelationIdMiddleware)
 
 
 @app.get("/health")
@@ -144,25 +157,19 @@ async def get_migration():
     return {"name": name, "migrated_at": migrated_at}
 
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-
-
 @app.get("/api/ips")
 async def get_ips(request: Request, response: Response):
     """
     Returns a list of partially redacted IP addresses, as well as submitting the user's IP address to the database (buffered).
     """
-    now = datetime.now()
+    now = datetime.utcnow()
 
     # Get the user's IP address
-    user_ip = (
-        get_ip(request) if not is_development else random.choice(app.state.ip_pool)
-    )
+    user_ip = get_ip(request)
 
     # If the IP address is not found, return an error
     if user_ip is None:
-        print("No IP found!")
+        logger.warning("unable to acquire user IP address")
         response.status_code = status.HTTP_403_FORBIDDEN
         return {"error": "Unable to handle request."}
 
@@ -183,7 +190,10 @@ async def get_ips(request: Request, response: Response):
         "ips": [
             responses.SeenIP(
                 ip=hide_ip(ip.ip) if ip.ip != user_ip else ip.ip,
-                last_seen=human_readable.date_time(ip.last_seen),
+                last_seen=human_readable.date_time(
+                    value=pytz.utc.localize(ip.last_seen),
+                    when=datetime.now(timezone.utc),
+                ),
                 count=ip.count,
             )
             for ip in latest_ips

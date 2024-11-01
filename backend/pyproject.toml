@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "linkpulse"
-version = "0.1.0"
+version = "0.2.0"
 description = ""
 authors = ["Xevion <xevion@xevion.dev>"]
 license = "GNU GPL v3"
@@ -13,7 +13,6 @@ app = "linkpulse"
 [tool.poetry.dependencies]
 python = "^3.12"
 fastapi = "0.100"
-Hypercorn = "0.14.4"
 python-dotenv = "^1.0.1"
 peewee = "^3.17.7"
 peewee-migrate = "^1.13.0"
@@ -24,11 +23,15 @@ questionary = "^2.0.1"
 apscheduler = "^3.10.4"
 human-readable = "^1.3.4"
 psycopg2 = "^2.9.10"
+structlog = "^24.4.0"
+uvicorn = "^0.32.0"
+asgi-correlation-id = "^4.3.4"
 
 
 [tool.poetry.group.dev.dependencies]
 memory-profiler = "^0.61.0"
 bpython = "^0.24"
+types-pytz = "^2024.2.0.20241003"
 
 [build-system]
 requires = ["poetry-core"]
