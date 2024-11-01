@@ -9,7 +9,6 @@ from typing import AsyncIterator
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request, Response, status
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.inmemory import InMemoryBackend
 from fastapi_cache.decorator import cache
@@ -99,6 +98,8 @@ app = FastAPI(lifespan=lifespan)
 
 
 if is_development:
+    from fastapi.middleware.cors import CORSMiddleware
+
     origins = [
         "http://localhost",
         "http://localhost:5173",
