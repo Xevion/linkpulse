@@ -8,7 +8,6 @@ fi
 
 # Default to development mode if not defined
 export ENVIRONMENT=${ENVIRONMENT:-development}
-# COMMAND='poetry run hypercorn linkpulse.app:app --reload --log-config=toml:logging.toml'
 COMMAND='poetry run python3 -m linkpulse serve'
 
 # Check if Railway CLI is available
