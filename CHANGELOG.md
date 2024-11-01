@@ -9,7 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Mildly reformatted `README.md`
 - A development mode check for the `app.state.ip_pool`'s initialization (caused application failure in production only)
+
+### Fixed
+
+- Improper formatting of blockquote Alerts in `README.md`
 
 ## [0.2.0] - 2024-11-01
 
