@@ -1,4 +1,17 @@
 {
+    "cSpell.words": [
+        "apscheduler",
+        "bpython",
+        "Callsite",
+        "excepthook",
+        "inmemory",
+        "linkpulse",
+        "migratehistory",
+        "Nixpacks",
+        "starlette",
+        "structlog",
+        "timestamper"
+    ],
     "python.analysis.extraPaths": [
         "./backend/"
     ]
