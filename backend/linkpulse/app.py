@@ -1,4 +1,3 @@
-import logging
 import os
 import random
 
@@ -18,7 +17,7 @@ from fastapi_cache import FastAPICache
 from fastapi_cache.backends.inmemory import InMemoryBackend
 from fastapi_cache.decorator import cache
 import structlog
-from linkpulse.utilities import get_ip, hide_ip, pluralize
+from linkpulse.utilities import get_ip, hide_ip
 from linkpulse.middleware import LoggingMiddleware
 from peewee import PostgresqlDatabase
 from psycopg2.extras import execute_values
@@ -87,7 +86,9 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
 
     # Delete all randomly generated IP addresses
     with db.atomic():
-        logger.info("Deleting Randomized IP Addresses", ip_pool_count=len(app.state.ip_pool))
+        logger.info(
+            "Deleting Randomized IP Addresses", ip_pool_count=len(app.state.ip_pool)
+        )
         query = models.IPAddress.delete().where(
             models.IPAddress.ip << app.state.ip_pool
         )

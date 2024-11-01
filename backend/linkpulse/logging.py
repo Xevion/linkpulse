@@ -24,35 +24,42 @@ def drop_color_message_key(_, __, event_dict: EventDict) -> EventDict:
     return event_dict
 
 
-def setup_logging(json_logs: Optional[bool] = None, log_level: Optional[str] = None) -> None:
+def setup_logging(
+    json_logs: Optional[bool] = None, log_level: Optional[str] = None
+) -> None:
     json_logs = json_logs or os.getenv("LOG_JSON_FORMAT", "true").lower() == "true"
     log_level = log_level or os.getenv("LOG_LEVEL", "INFO")
 
     def flatten(n):
         match n:
-            case []: return []
-            case [[*hd], *tl]: return [*flatten(hd), *flatten(tl)]
-            case [hd, *tl]: return [hd, *flatten(tl)]
+            case []:
+                return []
+            case [[*hd], *tl]:
+                return [*flatten(hd), *flatten(tl)]
+            case [hd, *tl]:
+                return [hd, *flatten(tl)]
 
-    shared_processors: List[Processor] = flatten([
-        structlog.contextvars.merge_contextvars,
-        structlog.stdlib.add_logger_name,
-        structlog.stdlib.add_log_level,
-        structlog.stdlib.PositionalArgumentsFormatter(),
-        structlog.stdlib.ExtraAdder(),
-        drop_color_message_key,
-        structlog.processors.TimeStamper(fmt="iso"),
-        structlog.processors.StackInfoRenderer(),
-        (
-            [
-                rename_event_key,
-                # Format the exception only for JSON logs, as we want to pretty-print them when using the ConsoleRenderer
-                structlog.processors.format_exc_info,
-            ]
-            if json_logs
-            else []
-        ),
-    ])
+    shared_processors: List[Processor] = flatten(
+        [
+            structlog.contextvars.merge_contextvars,
+            structlog.stdlib.add_logger_name,
+            structlog.stdlib.add_log_level,
+            structlog.stdlib.PositionalArgumentsFormatter(),
+            structlog.stdlib.ExtraAdder(),
+            drop_color_message_key,
+            structlog.processors.TimeStamper(fmt="iso"),
+            structlog.processors.StackInfoRenderer(),
+            (
+                [
+                    rename_event_key,
+                    # Format the exception only for JSON logs, as we want to pretty-print them when using the ConsoleRenderer
+                    structlog.processors.format_exc_info,
+                ]
+                if json_logs
+                else []
+            ),
+        ]
+    )
 
     structlog.configure(
         processors=[
@@ -88,18 +95,22 @@ def setup_logging(json_logs: Optional[bool] = None, log_level: Optional[str] = N
     root_logger.addHandler(handler)
     root_logger.setLevel(log_level.upper())
 
-    def configure_logger(name: str, level: Optional[str] = None, clear: Optional[bool] = None, propagate: Optional[bool] = None) -> None:
+    def configure_logger(
+        name: str,
+        level: Optional[str] = None,
+        clear: Optional[bool] = None,
+        propagate: Optional[bool] = None,
+    ) -> None:
         logger = logging.getLogger(name)
 
         if level is not None:
             logger.setLevel(level.upper())
-        
+
         if clear is True:
             logger.handlers.clear()
-        
+
         if propagate is not None:
             logger.propagate = propagate
-        
 
     # Clear the log handlers for uvicorn loggers, and enable propagation
     # so the messages are caught by our root logger and formatted correctly
@@ -108,7 +119,6 @@ def setup_logging(json_logs: Optional[bool] = None, log_level: Optional[str] = N
     configure_logger("uvicorn.error", clear=True, propagate=True)
 
     configure_logger("apscheduler.executors.default", level="WARNING")
-
 
     # Since we re-create the access logs ourselves, to add all information
     # in the structured log (see the `logging_middleware` in main.py), we clear

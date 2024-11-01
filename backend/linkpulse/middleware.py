@@ -6,7 +6,6 @@ from fastapi import FastAPI, Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 
 
-
 class LoggingMiddleware(BaseHTTPMiddleware):
     def __init__(self, app: FastAPI):
         super().__init__(app)
@@ -30,7 +29,7 @@ class LoggingMiddleware(BaseHTTPMiddleware):
             structlog.stdlib.get_logger("api.error").exception("Uncaught exception")
             raise
         finally:
-            process_time_ms = (time.perf_counter_ns() - start_time) / 10 ** 6
+            process_time_ms = (time.perf_counter_ns() - start_time) / 10**6
 
             self.access_logger.debug(
                 "Request",
@@ -42,10 +41,14 @@ class LoggingMiddleware(BaseHTTPMiddleware):
                     "request_id": request_id,
                     "version": request.scope["http_version"],
                 },
-                client={"ip": request.client.host, "port": request.client.port} if request.client else None,
+                client=(
+                    {"ip": request.client.host, "port": request.client.port}
+                    if request.client
+                    else None
+                ),
                 duration="{:.2f}ms".format(process_time_ms),
             )
 
             # response.headers["X-Process-Time"] = str(process_time / 10 ** 9)
-            
+
             return response
