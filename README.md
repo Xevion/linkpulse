@@ -72,6 +72,9 @@ A full stack (*frontend* and *backend*), automatically reloading project is poss
 2. Execute `./run.sh` to start the development server for each.
     - For the backend, you'll either need to have the `railway` CLI installed or a `.env` file with the database URL.
       - See [`.env.example`](backend/.env.example) for a list of all available environment variables.
+    - For the frontend, the defaults are already sufficient.
+
+>[!WARNING] The `run.sh` scripts provide default environment variables internally; if you want to run the commands manually, you'll need to provide them to `.env` files or the command line.
 
 [peewee]: https://docs.peewee-orm.com/en/latest/
 [railway]: https://docs.railway.app/guides/cli
