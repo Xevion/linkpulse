@@ -31,6 +31,7 @@ asgi-correlation-id = "^4.3.4"
 [tool.poetry.group.dev.dependencies]
 memory-profiler = "^0.61.0"
 bpython = "^0.24"
+types-pytz = "^2024.2.0.20241003"
 
 [build-system]
 requires = ["poetry-core"]

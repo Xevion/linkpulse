@@ -4,11 +4,12 @@ import random
 from collections import defaultdict
 from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import AsyncIterator
 
 from asgi_correlation_id import CorrelationIdMiddleware
 import human_readable
+import pytz
 from apscheduler.schedulers.background import BackgroundScheduler  # type: ignore
 from apscheduler.triggers.interval import IntervalTrigger  # type: ignore
 from dotenv import load_dotenv
@@ -195,7 +196,10 @@ async def get_ips(request: Request, response: Response):
         "ips": [
             responses.SeenIP(
                 ip=hide_ip(ip.ip) if ip.ip != user_ip else ip.ip,
-                last_seen=human_readable.date_time(ip.last_seen),
+                last_seen=human_readable.date_time(
+                    value=pytz.utc.localize(ip.last_seen),
+                    when=datetime.now(timezone.utc),
+                ),
                 count=ip.count,
             )
             for ip in latest_ips
