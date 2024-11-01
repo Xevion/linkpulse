@@ -13,7 +13,7 @@ logger = structlog.get_logger()
 
 
 # I can't pollute the class definition with these lines, so I'll move them to a separate function.
-def __get_database_url():
+def _get_database_url():
     url = getenv("DATABASE_URL")
     if url is None or url.strip() == "":
         raise ValueError("DATABASE_URL is not set")
@@ -23,7 +23,7 @@ def __get_database_url():
 class BaseModel(Model):
     class Meta:
         # accessed via `BaseModel._meta.database`
-        database = connect(url=__get_database_url())
+        database = connect(url=_get_database_url())
 
 
 class IPAddress(BaseModel):

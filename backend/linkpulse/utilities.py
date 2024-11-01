@@ -88,6 +88,10 @@ def hide_ip(ip: str, hidden_octets: Optional[int] = None) -> str:
     if ipv6 == ("." in ip):
         raise ValueError("Invalid IP address format. Must be either IPv4 or IPv6.")
 
+    # Secondary check, if the IP address is an IPv6 address with unspecified address (::), return it as is.
+    if ipv6 and ip.startswith("::"):
+        return ip
+
     total_octets = 8 if ipv6 else 4
     separator = ":" if ipv6 else "."
     replacement = "XXXX" if ipv6 else "X"
