@@ -1,8 +1,14 @@
+"""utilities.py
+This module provides utility functions for database connection, string manipulation, and IP address handling.
+"""
+
 import os
 from typing import Optional
+
 from fastapi import Request
 from peewee import PostgresqlDatabase
 
+# globally referenced
 is_development = os.getenv("ENVIRONMENT") == "development"
 
 
