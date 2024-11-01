@@ -130,13 +130,17 @@ def main(*args: str) -> None:
     else:
         logger.info("No pending migrations to apply.")
 
+    # Inspects models and might generate a migration script
     migration_available = router.show(target_models)
+
     if migration_available is not None:
         logger.info("A migration is available to be applied:")
         migrate_text, rollback_text = migration_available
 
         def _reformat_text(text: str) -> str:
+            # Remove empty lines
             text = [line for line in text.split("\n") if line.strip() != ""]
+            # Add line numbers, indent, ensure it starts on a new line
             return "\n" + "\n".join([f"{i:02}:\t{line}" for i, line in enumerate(text)])
 
         logger.info("Migration Content", content=_reformat_text(migrate_text))
@@ -144,11 +148,11 @@ def main(*args: str) -> None:
 
         if questionary.confirm("Do you want to create this migration?").ask():
             logger.info(
-                'Lowercase letters and underscores only (e.g. "create_table", "remove_ipaddress_count").'
+                'Minimum length 9, lowercase letters and underscores only (e.g. "create_table", "remove_ipaddress_count").'
             )
             migration_name: Optional[str] = questionary.text(
                 "Enter migration name",
-                validate=lambda text: re.match("^[a-z_]+$", text) is not None,
+                validate=lambda text: re.match("^[a-z_]{9,}$", text) is not None,
             ).ask()
 
             if migration_name is None:
@@ -157,6 +161,7 @@ def main(*args: str) -> None:
             migration = router.create(migration_name, auto=target_models)
             if migration:
                 logger.info(f"Migration created: {migration}")
+
                 if len(router.diff) == 1:
                     if questionary.confirm(
                         "Do you want to apply this migration immediately?"
@@ -167,8 +172,9 @@ def main(*args: str) -> None:
                             "!!! Commit and push this migration file immediately!"
                         )
             else:
-                logger.error("No changes detected. Something went wrong.")
-                return
+                raise RuntimeError(
+                    "Changes anticipated with show() but no migration created with create(), model definition may have reverted."
+                )
     else:
         logger.info("No database changes detected.")
 

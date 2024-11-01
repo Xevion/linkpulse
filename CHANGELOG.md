@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `logging.py`
   - `models.py`
   - `utilities.py`
+  - `migrate.py`
+  - `responses.py`
 - A `get_db` utility function to retrieve a reference to the database (with type hinting)
 - Minor `DATABASE_URL` check in `models.py` to prevent cryptic connection issues
 
@@ -21,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Migration script now uses `structlog` instead of `print`
   - Migration script output is tuned to structlog as well.
+- Migration names must be at least 9 characters long
 - Unspecified IPv6 addresses are returned without hiding in `utilities.hide_ip`
 - Applied `get_db` utility function in all applicable areas.
 
