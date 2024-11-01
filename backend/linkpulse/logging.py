@@ -27,10 +27,14 @@ def drop_color_message_key(_, __, event_dict: EventDict) -> EventDict:
 def setup_logging(
     json_logs: Optional[bool] = None, log_level: Optional[str] = None
 ) -> None:
+    # Pull from environment variables, apply defaults if not set
     json_logs = json_logs or os.getenv("LOG_JSON_FORMAT", "true").lower() == "true"
     log_level = log_level or os.getenv("LOG_LEVEL", "INFO")
 
     def flatten(n):
+        """
+        Flattens a nested list into a single list of elements.
+        """
         match n:
             case []:
                 return []
@@ -39,6 +43,7 @@ def setup_logging(
             case [hd, *tl]:
                 return [hd, *flatten(tl)]
 
+    # Shared structlog processors, both for the root logger and foreign loggers
     shared_processors: List[Processor] = flatten(
         [
             structlog.contextvars.merge_contextvars,
@@ -49,6 +54,7 @@ def setup_logging(
             drop_color_message_key,
             structlog.processors.TimeStamper(fmt="iso"),
             structlog.processors.StackInfoRenderer(),
+            # Processors only used for the JSON renderer
             (
                 [
                     rename_event_key,
@@ -61,6 +67,7 @@ def setup_logging(
         ]
     )
 
+    # Main structlog configuration
     structlog.configure(
         processors=[
             *shared_processors,
@@ -101,6 +108,7 @@ def setup_logging(
         clear: Optional[bool] = None,
         propagate: Optional[bool] = None,
     ) -> None:
+        """Helper function to configure a logger with the given parameters."""
         logger = logging.getLogger(name)
 
         if level is not None:
