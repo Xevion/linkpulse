@@ -1,13 +1,20 @@
 import logging
 import os
 import sys
-from typing import List, Optional
+from typing import Any, List, Optional
 
 import structlog
 from structlog.types import EventDict, Processor
 
 
-def rename_event_key(_, __, event_dict: EventDict) -> EventDict:
+def decode_bytes(_: Any, __: Any, bs: bytes) -> str:
+    """
+    orjson returns bytes; we need strings
+    """
+    return bs.decode()
+
+
+def rename_event_key(_: Any, __: Any, event_dict: EventDict) -> EventDict:
     """
     Renames the `event` key to `msg`, as Railway expects it in that form.
     """
@@ -15,7 +22,7 @@ def rename_event_key(_, __, event_dict: EventDict) -> EventDict:
     return event_dict
 
 
-def drop_color_message_key(_, __, event_dict: EventDict) -> EventDict:
+def drop_color_message_key(_: Any, __: Any, event_dict: EventDict) -> EventDict:
     """
     Uvicorn logs the message a second time in the extra `color_message`, but we don't
     need it. This processor drops the key from the event dict if it exists.
@@ -80,7 +87,9 @@ def setup_logging(
 
     log_renderer: structlog.types.Processor
     if json_logs:
-        log_renderer = structlog.processors.JSONRenderer()
+        import orjson
+
+        log_renderer = structlog.processors.JSONRenderer(serializer=orjson.dumps)
     else:
         log_renderer = structlog.dev.ConsoleRenderer()
 
@@ -92,6 +101,8 @@ def setup_logging(
             # Remove _record & _from_structlog.
             structlog.stdlib.ProcessorFormatter.remove_processors_meta,
             log_renderer,
+            # required with orjson
+            *([decode_bytes] if json_logs else []),  # type: ignore
         ],
     )
 

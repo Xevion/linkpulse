@@ -8,6 +8,7 @@
     "linkpulse",
     "migratehistory",
     "Nixpacks",
+    "ORJSON",
     "pytz",
     "starlette",
     "structlog",

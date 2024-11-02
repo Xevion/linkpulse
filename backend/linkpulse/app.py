@@ -13,12 +13,13 @@ from apscheduler.triggers.interval import IntervalTrigger  # type: ignore
 from asgi_correlation_id import CorrelationIdMiddleware
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request, Response, status
+from fastapi.responses import ORJSONResponse
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.inmemory import InMemoryBackend
 from fastapi_cache.decorator import cache
 from linkpulse.logging import setup_logging
 from linkpulse.middleware import LoggingMiddleware
-from linkpulse.utilities import get_ip, hide_ip, is_development, get_db
+from linkpulse.utilities import get_db, get_ip, hide_ip, is_development
 from psycopg2.extras import execute_values
 
 load_dotenv(dotenv_path=".env")
@@ -113,7 +114,7 @@ class IPCounter:
     last_seen: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(lifespan=lifespan, default_response_class=ORJSONResponse)
 
 setup_logging()
 

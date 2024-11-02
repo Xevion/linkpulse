@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added the `orjson` serializer for faster JSON serialization
+  - Used in `structlog`'s `JSONRenderer` for production logging
+  - Used in `fastapi`'s `Response` for faster response serialization
 - Improved documentation in multiple files
   - `__main__.py`
   - `logging.py`
