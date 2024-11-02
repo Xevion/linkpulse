@@ -36,9 +36,7 @@ def main(*args):
         run(
             "linkpulse.app:app",
             reload=is_development,
-            # Both options are special IP addresses that allow the server to listen on all network interfaces. One is for IPv4, the other for IPv6.
-            # Railway's private networking requires IPv6, so we must use that in production.
-            host="0.0.0.0" if is_development else "::",
+            host="0.0.0.0",
             port=int(os.getenv("PORT", "8000")),
             log_config={
                 "version": 1,
