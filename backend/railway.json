@@ -4,6 +4,6 @@
     "builder": "NIXPACKS"
   },
   "deploy": {
-    "startCommand": "hypercorn linkpulse.app:app --bind \"[::]:$PORT\" --log-config \"toml:logging.toml\""
+    "startCommand": "uvicorn \"linkpulse.app:app\" --host :: --port $PORT"
   }
 }
