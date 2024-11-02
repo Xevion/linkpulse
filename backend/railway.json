@@ -4,6 +4,6 @@
     "builder": "NIXPACKS"
   },
   "deploy": {
-    "startCommand": "python3 -m linkpulse serve"
+    "startCommand": "hypercorn linkpulse.app:app --bind \"[::]:$PORT\" --log-config \"toml:logging.toml\""
   }
 }

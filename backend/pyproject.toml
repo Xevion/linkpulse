@@ -27,6 +27,7 @@ structlog = "^24.4.0"
 uvicorn = "^0.32.0"
 asgi-correlation-id = "^4.3.4"
 orjson = "^3.10.10"
+hypercorn = "^0.17.3"
 
 
 [tool.poetry.group.dev.dependencies]

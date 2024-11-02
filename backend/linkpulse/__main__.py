@@ -36,7 +36,7 @@ def main(*args):
         run(
             "linkpulse.app:app",
             reload=is_development,
-            host="0.0.0.0",
+            host="0.0.0.0" if is_development else "::",
             port=int(os.getenv("PORT", "8000")),
             log_config={
                 "version": 1,
