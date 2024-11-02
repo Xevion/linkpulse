@@ -1,8 +1,27 @@
+"""utilities.py
+This module provides utility functions for database connection, string manipulation, and IP address handling.
+"""
+
 import os
 from typing import Optional
-from fastapi import Request
 
+from fastapi import Request
+from peewee import PostgresqlDatabase
+
+# globally referenced
 is_development = os.getenv("ENVIRONMENT") == "development"
+
+
+def get_db() -> PostgresqlDatabase:
+    """
+    Acquires the database connector from the BaseModel class.
+    This is not a cursor, but a connection to the database.
+    """
+
+    # Might not be necessary, but I'd prefer to not import heavy modules with side effects in a utility module.
+    from linkpulse import models
+
+    return models.BaseModel._meta.database  # type: ignore
 
 
 def pluralize(count: int, word: Optional[str] = None) -> str:
@@ -68,6 +87,10 @@ def hide_ip(ip: str, hidden_octets: Optional[int] = None) -> str:
     # Make sure that IPv4 (dot) and IPv6 (colon) addresses are not mixed together somehow. Not a comprehensive check.
     if ipv6 == ("." in ip):
         raise ValueError("Invalid IP address format. Must be either IPv4 or IPv6.")
+
+    # Secondary check, if the IP address is an IPv6 address with unspecified address (::), return it as is.
+    if ipv6 and ip.startswith("::"):
+        return ip
 
     total_octets = 8 if ipv6 else 4
     separator = ":" if ipv6 else "."

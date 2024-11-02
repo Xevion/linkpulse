@@ -1,13 +1,20 @@
 import logging
 import os
 import sys
-from typing import List, Optional
+from typing import Any, List, Optional
 
 import structlog
 from structlog.types import EventDict, Processor
 
 
-def rename_event_key(_, __, event_dict: EventDict) -> EventDict:
+def decode_bytes(_: Any, __: Any, bs: bytes) -> str:
+    """
+    orjson returns bytes; we need strings
+    """
+    return bs.decode()
+
+
+def rename_event_key(_: Any, __: Any, event_dict: EventDict) -> EventDict:
     """
     Renames the `event` key to `msg`, as Railway expects it in that form.
     """
@@ -15,7 +22,7 @@ def rename_event_key(_, __, event_dict: EventDict) -> EventDict:
     return event_dict
 
 
-def drop_color_message_key(_, __, event_dict: EventDict) -> EventDict:
+def drop_color_message_key(_: Any, __: Any, event_dict: EventDict) -> EventDict:
     """
     Uvicorn logs the message a second time in the extra `color_message`, but we don't
     need it. This processor drops the key from the event dict if it exists.
@@ -27,10 +34,14 @@ def drop_color_message_key(_, __, event_dict: EventDict) -> EventDict:
 def setup_logging(
     json_logs: Optional[bool] = None, log_level: Optional[str] = None
 ) -> None:
+    # Pull from environment variables, apply defaults if not set
     json_logs = json_logs or os.getenv("LOG_JSON_FORMAT", "true").lower() == "true"
     log_level = log_level or os.getenv("LOG_LEVEL", "INFO")
 
     def flatten(n):
+        """
+        Flattens a nested list into a single list of elements.
+        """
         match n:
             case []:
                 return []
@@ -39,6 +50,7 @@ def setup_logging(
             case [hd, *tl]:
                 return [hd, *flatten(tl)]
 
+    # Shared structlog processors, both for the root logger and foreign loggers
     shared_processors: List[Processor] = flatten(
         [
             structlog.contextvars.merge_contextvars,
@@ -49,6 +61,7 @@ def setup_logging(
             drop_color_message_key,
             structlog.processors.TimeStamper(fmt="iso"),
             structlog.processors.StackInfoRenderer(),
+            # Processors only used for the JSON renderer
             (
                 [
                     rename_event_key,
@@ -61,6 +74,7 @@ def setup_logging(
         ]
     )
 
+    # Main structlog configuration
     structlog.configure(
         processors=[
             *shared_processors,
@@ -73,7 +87,9 @@ def setup_logging(
 
     log_renderer: structlog.types.Processor
     if json_logs:
-        log_renderer = structlog.processors.JSONRenderer()
+        import orjson
+
+        log_renderer = structlog.processors.JSONRenderer(serializer=orjson.dumps)
     else:
         log_renderer = structlog.dev.ConsoleRenderer()
 
@@ -85,6 +101,8 @@ def setup_logging(
             # Remove _record & _from_structlog.
             structlog.stdlib.ProcessorFormatter.remove_processors_meta,
             log_renderer,
+            # required with orjson
+            *([decode_bytes] if json_logs else []),  # type: ignore
         ],
     )
 
@@ -101,6 +119,7 @@ def setup_logging(
         clear: Optional[bool] = None,
         propagate: Optional[bool] = None,
     ) -> None:
+        """Helper function to configure a logger with the given parameters."""
         logger = logging.getLogger(name)
 
         if level is not None:
@@ -118,7 +137,10 @@ def setup_logging(
     configure_logger("uvicorn", clear=True, propagate=True)
     configure_logger("uvicorn.error", clear=True, propagate=True)
 
+    # Disable the apscheduler loggers, as they are too verbose
+    # TODO: This should be configurable easily from a TOML or YAML file
     configure_logger("apscheduler.executors.default", level="WARNING")
+    configure_logger("apscheduler.scheduler", level="WARNING")
 
     # Since we re-create the access logs ourselves, to add all information
     # in the structured log (see the `logging_middleware` in main.py), we clear

@@ -5,6 +5,37 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.2] - 2024-11-01
+
+### Added
+
+- Added the `orjson` serializer for faster JSON serialization
+  - Used in `structlog`'s `JSONRenderer` for production logging
+  - Used in `fastapi`'s `Response` for faster response serialization
+- Improved documentation in multiple files
+  - `__main__.py`
+  - `logging.py`
+  - `models.py`
+  - `utilities.py`
+  - `migrate.py`
+  - `responses.py`
+- A `get_db` utility function to retrieve a reference to the database (with type hinting)
+- Minor `DATABASE_URL` check in `models.py` to prevent cryptic connection issues
+
+## Changed
+
+- Migration script now uses `structlog` instead of `print`
+  - Migration script output is tuned to structlog as well.
+- Migration names must be at least 9 characters long
+- Unspecified IPv6 addresses are returned without hiding in `utilities.hide_ip`
+- Applied `get_db` utility function in all applicable areas.
+
+### Fixed
+
+- Raised level for `apscheduler.scheduler` logger to `WARNING` to prevent excessive logging
+- IPv4 interface bind in production, preventing Railway's Private Networking from functioning
+- Reloader mode enabled in production
+
 ## [0.2.1] - 2024-11-01
 
 ### Changed
@@ -20,7 +51,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- This `CHANGELOG.md` file.
+- This `CHANGELOG.md` file
 - Structured logging with `structlog`
   - Readable `ConsoleRenderer` for local development
   - `JSONRenderer` for production logging

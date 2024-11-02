@@ -1,3 +1,19 @@
+"""
+This module serves as the entry point for the LinkPulse application. It provides
+command-line interface (CLI) commands to serve the application, run migrations,
+or start a REPL (Read-Eval-Print Loop) session.
+
+Commands:
+- serve: Starts the application server using Uvicorn.
+- migrate: Runs database migrations.
+- repl: Starts an interactive Python shell with pre-imported objects and models.
+"""
+
+from linkpulse.logging import setup_logging
+
+# We want to setup logging as early as possible.
+setup_logging()
+
 import os
 import sys
 import structlog
@@ -7,17 +23,22 @@ logger = structlog.get_logger()
 
 
 def main(*args):
+    """
+    Primary entrypoint for the LinkPulse application
+    - Don't import any modules globally unless you're certain it's necessary. Imports should be tightly controlled.
+    """
     if args[0] == "serve":
-        from linkpulse.logging import setup_logging
+        from linkpulse.utilities import is_development
         from uvicorn import run
 
-        setup_logging()
-
         logger.debug("Invoking uvicorn.run")
+
         run(
             "linkpulse.app:app",
-            reload=True,
-            host="0.0.0.0",
+            reload=is_development,
+            # Both options are special IP addresses that allow the server to listen on all network interfaces. One is for IPv4, the other for IPv6.
+            # Railway's private networking requires IPv6, so we must use that in production.
+            host="0.0.0.0" if is_development else "::",
             port=int(os.getenv("PORT", "8000")),
             log_config={
                 "version": 1,
@@ -32,28 +53,38 @@ def main(*args):
     elif args[0] == "migrate":
         from linkpulse.migrate import main
 
-        main(*args[1:])
+        main(*args)
     elif args[0] == "repl":
         import linkpulse
 
         # import most useful objects, models, and functions
         lp = linkpulse  # alias
-        from linkpulse.app import app, db
+        from linkpulse.utilities import get_db
+        from linkpulse.app import app
         from linkpulse.models import BaseModel, IPAddress
+
+        db = get_db()
 
         # start REPL
         from bpython import embed  # type: ignore
 
         embed(locals())
     else:
-        print("Invalid command: {}".format(args[0]))
+        raise ValueError("Unexpected command: {}".format(" ".join(args)))
 
 
 if __name__ == "__main__":
-    if len(sys.argv) == 1:
+    logger.debug("Entrypoint", argv=sys.argv)
+    args = sys.argv[1:]
+
+    if len(args) == 0:
+        logger.debug("No arguments provided, defaulting to 'serve'")
         main("serve")
     else:
         # Check that args after aren't all whitespace
-        remaining_args = " ".join(sys.argv[1:]).strip()
-        if len(remaining_args) > 0:
-            main(*sys.argv[1:])
+        normalized_args = " ".join(args).strip()
+        if len(normalized_args) == 0:
+            logger.warning("Whitespace arguments provided, defaulting to 'serve'")
+
+        logger.debug("Invoking main with arguments", args=args)
+        main(*args)

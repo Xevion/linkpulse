@@ -1,3 +1,8 @@
+"""responses.py
+
+This module contains the response models for the FastAPI application.
+"""
+
 from pydantic import BaseModel
 
 

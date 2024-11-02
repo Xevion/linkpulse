@@ -13,24 +13,25 @@ from apscheduler.triggers.interval import IntervalTrigger  # type: ignore
 from asgi_correlation_id import CorrelationIdMiddleware
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request, Response, status
+from fastapi.responses import ORJSONResponse
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.inmemory import InMemoryBackend
 from fastapi_cache.decorator import cache
 from linkpulse.logging import setup_logging
 from linkpulse.middleware import LoggingMiddleware
-from linkpulse.utilities import get_ip, hide_ip, is_development
-from peewee import PostgresqlDatabase
+from linkpulse.utilities import get_db, get_ip, hide_ip, is_development
 from psycopg2.extras import execute_values
 
 load_dotenv(dotenv_path=".env")
 
 from linkpulse import models, responses  # type: ignore
 
-db: PostgresqlDatabase = models.BaseModel._meta.database  # type: ignore
+db = get_db()
 
 
 def flush_ips():
     if len(app.state.buffered_updates) == 0:
+        logger.debug("No IPs to flush to Database")
         return
 
     try:
@@ -55,7 +56,7 @@ def flush_ips():
         logger.error("Failed to flush IPs to Database", error=e)
 
     i = len(app.state.buffered_updates)
-    logger.debug("Flushed IPs to Database", count=i)
+    logger.debug("IPs written to database", count=i)
 
     # Finish up
     app.state.buffered_updates.clear()
@@ -110,10 +111,10 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
 class IPCounter:
     # Note: This is not the true 'seen' count, but the count of how many times the IP has been seen since the last flush.
     count: int = 0
-    last_seen: datetime = field(default_factory=datetime.utcnow)
+    last_seen: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(lifespan=lifespan, default_response_class=ORJSONResponse)
 
 setup_logging()
 
@@ -161,7 +162,7 @@ async def get_ips(request: Request, response: Response):
     """
     Returns a list of partially redacted IP addresses, as well as submitting the user's IP address to the database (buffered).
     """
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
 
     # Get the user's IP address
     user_ip = get_ip(request)

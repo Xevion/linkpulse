@@ -4,19 +4,28 @@ import sys
 from typing import List, Optional, Tuple
 
 import questionary
+import structlog
 from dotenv import load_dotenv
-from peewee import PostgresqlDatabase
 from peewee_migrate import Router, router
 
+logger = structlog.get_logger()
 load_dotenv(dotenv_path=".env")
 
 
 class ExtendedRouter(Router):
+    """
+    The original Router class from peewee_migrate didn't have all the functions I needed, so several functions are added here
+
+    Added
+        - show: Show the suggested migration that will be created, without actually creating it
+        - all_migrations: Get all migrations that have been applied
+    """
+
     def show(self, module: str) -> Optional[Tuple[str, str]]:
         """
-        Show the suggested migration that will be created, without actually creating it.
+        Show the suggested migration that will be created, without actually creating it
 
-        :param module: The module to scan & diff against.
+        :param module: The module to scan & diff against
         """
         migrate = rollback = ""
 
@@ -55,7 +64,7 @@ class ExtendedRouter(Router):
 
     def all_migrations(self) -> List[str]:
         """
-        Get all migrations that have been applied.
+        Get all migrations that have been applied
         """
         return [mm.name for mm in self.model.select().order_by(self.model.id)]
 
@@ -65,38 +74,40 @@ def main(*args: str) -> None:
     Main function for running migrations.
     Args are fed directly from sys.argv.
     """
+    from linkpulse.utilities import get_db
+
     from linkpulse import models
 
-    db: PostgresqlDatabase = models.BaseModel._meta.database
+    db = get_db()
     router = ExtendedRouter(
         database=db,
         migrate_dir="linkpulse/migrations",
         ignore=[models.BaseModel._meta.table_name],
     )
-    auto = "linkpulse.models"
+    target_models = "linkpulse.models"  # The module to scan for models & changes
 
     current = router.all_migrations()
     if len(current) == 0:
         diff = router.diff
 
         if len(diff) == 0:
-            print(
+            logger.info(
                 "No migrations found, no pending migrations to apply. Creating initial migration."
             )
 
-            migration = router.create("initial", auto=auto)
+            migration = router.create("initial", auto=target_models)
             if not migration:
-                print("No changes detected. Something went wrong.")
+                logger.error("No changes detected. Something went wrong.")
             else:
-                print(f"Migration created: {migration}")
+                logger.info(f"Migration created: {migration}")
                 router.run(migration)
 
     diff = router.diff
     if len(diff) > 0:
-        print(
+        logger.info(
             "Note: Selecting a migration will apply all migrations up to and including the selected migration."
         )
-        print(
+        logger.info(
             "e.g. Applying 004 while only 001 is applied would apply 002, 003, and 004."
         )
 
@@ -104,95 +115,76 @@ def main(*args: str) -> None:
             "Select highest migration to apply:", choices=diff
         ).ask()
         if choice is None:
-            print(
+            logger.warning(
                 "For safety reasons, you won't be able to create migrations without applying the pending ones."
             )
             if len(current) == 0:
-                print(
+                logger.warning(
                     "Warn: No migrations have been applied globally, which is dangerous. Something may be wrong."
                 )
             return
 
         result = router.run(choice)
-        print(f"Done. Applied migrations: {result}")
-        print("Warning: You should commit and push any new migrations immediately!")
+        logger.info(f"Done. Applied migrations: {result}")
+        logger.warning("You should commit and push any new migrations immediately!")
     else:
-        print("No pending migrations to apply.")
+        logger.info("No pending migrations to apply.")
 
-    migration_available = router.show(auto)
+    # Inspects models and might generate a migration script
+    migration_available = router.show(target_models)
+
     if migration_available is not None:
-        print("A migration is available to be applied:")
+        logger.info("A migration is available to be applied:")
         migrate_text, rollback_text = migration_available
 
-        print("MIGRATION:")
-        for line in migrate_text.split("\n"):
-            if line.strip() == "":
-                continue
-            print("\t" + line)
-        print("ROLLBACK:")
-        for line in rollback_text.split("\n"):
-            if line.strip() == "":
-                continue
-            print("\t" + line)
+        def _reformat_text(text: str) -> str:
+            # Remove empty lines
+            text = [line for line in text.split("\n") if line.strip() != ""]
+            # Add line numbers, indent, ensure it starts on a new line
+            return "\n" + "\n".join([f"{i:02}:\t{line}" for i, line in enumerate(text)])
+
+        logger.info("Migration Content", content=_reformat_text(migrate_text))
+        logger.info("Rollback Content", content=_reformat_text(rollback_text))
 
         if questionary.confirm("Do you want to create this migration?").ask():
-            print(
-                'Lowercase letters and underscores only (e.g. "create_table", "remove_ipaddress_count").'
+            logger.info(
+                'Minimum length 9, lowercase letters and underscores only (e.g. "create_table", "remove_ipaddress_count").'
             )
             migration_name: Optional[str] = questionary.text(
                 "Enter migration name",
-                validate=lambda text: re.match("^[a-z_]+$", text) is not None,
+                validate=lambda text: re.match("^[a-z_]{9,}$", text) is not None,
             ).ask()
 
             if migration_name is None:
                 return
 
-            migration = router.create(migration_name, auto=auto)
+            migration = router.create(migration_name, auto=target_models)
             if migration:
-                print(f"Migration created: {migration}")
+                logger.info(f"Migration created: {migration}")
+
                 if len(router.diff) == 1:
                     if questionary.confirm(
                         "Do you want to apply this migration immediately?"
                     ).ask():
                         router.run(migration)
-                        print("Done.")
-                        print("!!! Commit and push this migration file immediately!")
+                        logger.info("Done.")
+                        logger.warning(
+                            "!!! Commit and push this migration file immediately!"
+                        )
             else:
-                print("No changes detected. Something went wrong.")
-                return
+                raise RuntimeError(
+                    "Changes anticipated with show() but no migration created with create(), model definition may have reverted."
+                )
     else:
-        print("No database changes detected.")
+        logger.info("No database changes detected.")
 
     if len(current) > 5:
         if questionary.confirm(
             "There are more than 5 migrations applied. Do you want to merge them?",
             default=False,
         ).ask():
-            print("Merging migrations...")
+            logger.info("Merging migrations...")
             router.merge(name="initial")
-            print("Done.")
+            logger.info("Done.")
 
-            print("!!! Commit and push this merged migration file immediately!")
-
-    # Testing Code:
-
-
-"""
-    print(router.print('linkpulse.models'))
-
-    # Create migration
-    print("Creating migration")
-    migration = router.create('test', auto='linkpulse.models')
-    if migration is None:
-        print("No changes detected")
-    else:
-        print(f"Migration Created: {migration}")
-
-        # Run migration/migrations
-        router.run(migration)
-
-    Run all unapplied migrations
-    print("Running all unapplied migrations")
-    applied = router.run()
-    print(f"Applied migrations: {applied}")
-"""
+            logger.warning("Commit and push this merged migration file immediately!")

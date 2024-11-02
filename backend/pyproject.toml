@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "linkpulse"
-version = "0.2.1"
+version = "0.2.2"
 description = ""
 authors = ["Xevion <xevion@xevion.dev>"]
 license = "GNU GPL v3"
@@ -26,6 +26,7 @@ psycopg2 = "^2.9.10"
 structlog = "^24.4.0"
 uvicorn = "^0.32.0"
 asgi-correlation-id = "^4.3.4"
+orjson = "^3.10.10"
 
 
 [tool.poetry.group.dev.dependencies]
