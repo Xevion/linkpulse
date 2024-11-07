@@ -7,8 +7,10 @@ from datetime import datetime
 from os import getenv
 
 import structlog
-from peewee import CharField, DateTimeField, IntegerField, AutoField, Model
+from peewee import AutoField, CharField, DateTimeField, ForeignKeyField, Model
 from playhouse.db_url import connect
+
+from linkpulse.utilities import utc_now
 
 logger = structlog.get_logger()
 
@@ -33,5 +35,19 @@ class User(BaseModel):
     email = CharField(unique=True, max_length=45)
     # full hash with encoded salt/parameters, argon2 but assume nothing
     password_hash = CharField(max_length=96)
-    created_at = DateTimeField(default=datetime.now)
-    updated_at = DateTimeField(default=datetime.now)
+    created_at = DateTimeField(default=utc_now)
+    updated_at = DateTimeField(default=utc_now)
+
+
+class Session(BaseModel):
+    """
+    A session represents a user's login session.
+    """
+
+    token = CharField(unique=True, primary_key=True, max_length=32)
+    user = ForeignKeyField(User, backref="sessions")
+
+    expiry = DateTimeField()
+
+    created_at = DateTimeField(default=utc_now)
+    last_used = DateTimeField(null=True)
