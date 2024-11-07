@@ -3,13 +3,22 @@ This module provides utility functions for database connection, string manipulat
 """
 
 import os
+from datetime import datetime
 from typing import Optional
 
+import pytz
 from fastapi import Request
 from peewee import PostgresqlDatabase
 
 # globally referenced
 is_development = os.getenv("ENVIRONMENT") == "development"
+
+
+def utc_now() -> datetime:
+    """
+    A utility function to replace the deprecated datetime.datetime.utcnow() function.
+    """
+    return datetime.now(pytz.utc)
 
 
 def get_db() -> PostgresqlDatabase:
