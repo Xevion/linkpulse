@@ -8,6 +8,8 @@ fi
 
 # Default to development mode if not defined
 export ENVIRONMENT=${ENVIRONMENT:-development}
+export LOG_JSON_FORMAT=${LOG_JSON_FORMAT:-false}
+export LOG_LEVEL=${LOG_LEVEL:-debug}
 COMMAND='poetry run python3 -m linkpulse'
 
 # Check if Railway CLI is available
