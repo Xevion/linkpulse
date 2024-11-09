@@ -55,9 +55,16 @@ jobs:
           cd backend
           set -o pipefail  # otherwise 'tee' will eat the exit code
           poetry run pytest --color=yes --cov=linkpulse --cov-report=term-missing:skip-covered --junitxml=pytest.xml | tee pytest-coverage.txt
+          
+          # pytest-coverage-comment won't error if the files are missing
+          if [ ! -f backend/pytest-coverage.txt ] || [ ! -f backend/pytest.xml ]; then
+            echo "::error::Coverage files not found"
+            exit 1
+          fi
 
       - name: Pytest coverage comment
         id: coverageComment
+        if: steps.check-coverage-files.outputs.success == 'true'
         uses: MishaKav/pytest-coverage-comment@main
         with:
           pytest-coverage-path: backend/pytest-coverage.txt
