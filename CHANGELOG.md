@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Added
 
+- A release checklist to the `CHANGELOG.md` file, as a reminder for procedure.
 - backend: `pwdlib[argon2]` for password hashing
 - backend: provided `LOG_JSON_FORMAT` and `LOG_LEVEL` environment variable defaults in `run.sh` development script
 - backend: `User` model, `Session` model with migration script
