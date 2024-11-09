@@ -1,6 +1,9 @@
 name: Checklist
 
-on: [pull_request]
+on:
+  pull_request:
+    paths:
+      - 'CHANGELOG.md'
 
 jobs:
   changelog:
