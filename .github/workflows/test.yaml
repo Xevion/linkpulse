@@ -38,7 +38,8 @@ jobs:
       - name: Pytest
         run: |
           cd backend
-          poetry run pytest --color=yes --cov-report=term-missing:skip-covered --cov=app tests/ | tee pytest-coverage.txt
+          set -o pipefail  # otherwise 'tee' will eat the exit code
+          poetry run pytest --color=yes --cov=linkpulse --cov-report=term-missing:skip-covered --junitxml=pytest.xml | tee pytest-coverage.txt
 
       - name: Pytest coverage comment
         id: coverageComment

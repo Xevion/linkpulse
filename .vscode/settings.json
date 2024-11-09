@@ -15,5 +15,8 @@
     "structlog",
     "timestamper"
   ],
-  "python.analysis.extraPaths": ["./backend/"]
+  "python.analysis.extraPaths": ["./backend/"],
+  "[github-actions-workflow]": {
+    "editor.formatOnSave": false
+  }
 }
