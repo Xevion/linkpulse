@@ -64,7 +64,7 @@ jobs:
           poetry run pytest --color=yes --cov=linkpulse --cov-report=term-missing:skip-covered --junitxml=pytest.xml | tee pytest-coverage.txt
           
           # pytest-coverage-comment won't error if the files are missing
-          if [ ! -f backend/pytest-coverage.txt ] || [ ! -f backend/pytest.xml ]; then
+          if [ ! -f ./pytest-coverage.txt ] || [ ! -f ./pytest.xml ]; then
             echo "::error::Coverage files not found"
             exit 1
           fi
