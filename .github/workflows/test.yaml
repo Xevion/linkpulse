@@ -35,6 +35,4 @@ jobs:
       - name: Install library
         run: cd backend && poetry install --no-interaction
 
-      - run: |
-          source $VENV
-          pytest --version
+      - run: cd backend && poetry run pytest
