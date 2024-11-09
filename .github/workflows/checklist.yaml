@@ -10,37 +10,46 @@ jobs:
       - uses: actions/github-script@v7
         with:
           script: |
+            const core = require('@actions/core');
             const fs = require('fs');
             const path = 'CHANGELOG.md';
             const changelog = fs.readFileSync(path, 'utf8');
-            const errors = [];
+            let failed = false;
 
-            // Check each line that starts with '##' for the version & date format
-            changelog.split('\n').forEach((line, index) => {
-              index += 1;
+            try {
+              // Check each line that starts with '##' for the version & date format
+              changelog.split('\n').forEach((line, index) => {
+                index += 1;
 
-              if (!line.startsWith('## '))
-                return;
+                if (!line.startsWith('## '))
+                  return;
 
-              if (line.toLowerCase().includes('unreleased')) {
-                const message = `Unreleased section found at line ${index}: ${line}`;
-                const command = `::error file=${path},line=${index},endLine=${index},title=Unreleased Section Found::${message}`;
-                console.log(command);
-                errors.push(message);
+                if (line.toLowerCase().includes('unreleased')) {
+                  core.error({
+                    title: 'Unreleased Section Found',
+                    file: path,
+                    startline: index,
+                  });
+                  failed = true;
+                }
+
+                // Expected format: '## [X.Y.Z] - YYYY-MM-DD'
+                const pattern = /^\d+\.\d+\.\d+ - \d{4}-\d{2}-\d{2}$/;
+                if (pattern.test(line)) {
+                  core.error({
+                    title: 'Invalid Version/Date Format',
+                    file: path,
+                    startline: index,
+                  });
+                  failed = true;
+                }
+              });
+
+              if (failed) {
+                core.setFailed('Changelog validation failed')
               }
-
-              // Expected format: '## [X.Y.Z] - YYYY-MM-DD'
-              const pattern = /^\d+\.\d+\.\d+ - \d{4}-\d{2}-\d{2}$/;
-              if (pattern.test(line)) {
-                const message = `Invalid version/date format at line ${index}: ${line}`;
-                const command = `::error file=${path},line=${index},endLine=${index},title=Invalid Version/Date Format::${message}`;
-                console.log(command);
-                errors.push(message);
-              }
-            });
-
-            if (errors.length > 0) {
-              throw new Error(errors.join('\n'));
+            } catch (error) {
+              core.setFailed(`Exception occurred while validating changelog: ${error}`);
             }
             
   draft:
@@ -50,14 +59,12 @@ jobs:
       - uses: actions/github-script@v7
         with:
           script: |
+            const core = require('@actions/core')
             const forbiddenLabels = ['draft'];
             let labels = context.payload.pull_request.labels;
 
             if (labels.some(l => forbiddenLabels.includes(l.name))) {
-                const message = `Forbidden labels detected: ${forbiddenLabels.join(', ')}`;
-                const command = `::error file=${__filename},line=1,endLine=1,title=Forbidden Labels Detected::${message}`;
-                console.log(command);
-                throw new Error(message);
+              core.setFailed(`Forbidden labels detected: ${forbiddenLabels.join(', ')}`);
             }
 
   
