@@ -1,0 +1,50 @@
+name: Checklist
+
+on:
+  pull_request:
+    types: [opened, edited, labeled, unlabeled, ]
+
+jobs:
+  changelog:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = 'CHANGELOG.md';
+            const changelog = fs.readFileSync(path, 'utf8');
+
+            // Check for 'UNRELEASED'
+            if (changelog.includes('UNRELEASED')) {
+              throw new Error('Changelog contains "UNRELEASED"');
+            }
+            
+            // Check each line that starts with '##' for the version & date format
+            const lines = changelog.split('\n');
+            for (const line of lines) {
+              if (line.startsWith('## ')) {
+                // Expected format: '## [X.Y.Z] - YYYY-MM-DD'
+                const pattern = !/^\d+\.\d+\.\d+ - \d{4}-\d{2}-\d{2}$/;
+                if (pattern.test(line)) {
+                  throw new Error(`Invalid version/date format: ${line}`);
+                }
+              }
+            }
+            
+  draft:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const forbiddenLabels = ['draft'];
+            let labels = context.payload.pull_request.labels;
+
+            if (labels.some(l => forbiddenLabels.includes(l.name))) {
+              throw new Error(`Forbidden labels detected: ${forbiddenLabels.join(', ')}`);
+            }
+
+  
