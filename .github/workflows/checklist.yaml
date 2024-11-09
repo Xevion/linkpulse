@@ -1,8 +1,6 @@
 name: Checklist
 
-on:
-  pull_request:
-    types: [opened, edited, labeled, unlabeled, ]
+on: [pull_request]
 
 jobs:
   changelog:
