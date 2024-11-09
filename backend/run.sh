@@ -10,7 +10,14 @@ fi
 export ENVIRONMENT=${ENVIRONMENT:-development}
 export LOG_JSON_FORMAT=${LOG_JSON_FORMAT:-false}
 export LOG_LEVEL=${LOG_LEVEL:-debug}
-COMMAND='poetry run python3 -m linkpulse'
+COMMAND='poetry run python3 -m linkpulse $@'
+
+# If arguments start with 'poetry run pytest' or 'pytest' use args as is
+if [[ "$1" == "poetry" && "$2" == "run" && "$3" == "pytest" ]]; then
+    COMMAND=$@
+elif [[ "$1" == "pytest" ]]; then
+    COMMAND=$@
+fi
 
 # Check if Railway CLI is available
 RAILWAY_AVAILABLE=false
@@ -45,11 +52,11 @@ if $RAILWAY_AVAILABLE; then
 fi
 
 if $DATABASE_DEFINED; then
-    $COMMAND $@
+    $COMMAND
 else
     if $RAILWAY_AVAILABLE; then
         if $PROJECT_LINKED; then
-            DATABASE_URL="$(railway variables --service Postgres --environment development --json | jq .DATABASE_PUBLIC_URL -cMr)" $COMMAND $@
+            DATABASE_URL="$(railway variables --service Postgres --environment development --json | jq .DATABASE_PUBLIC_URL -cMr)" $COMMAND
         else
             echo "error: Railway project not linked."
             echo "Run 'railway link' to link the project."
