@@ -34,6 +34,16 @@ jobs:
 
       - name: Install library
         run: cd backend && poetry install --no-interaction
+      
+      - name: Acquire Database URL from Railway
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          SERVICE_ID: linkpulse
+          ENVIRONMENT_ID: development
+        run: |
+          bash <(curl -fsSL cli.new)
+          echo "DATABASE_URL=$(railway variables --service Postgres --environment development --json | jq .DATABASE_PUBLIC_URL)" >> "$GITHUB_ENV"
+
 
       - name: Pytest
         run: |
