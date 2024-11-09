@@ -49,7 +49,7 @@ if $DATABASE_DEFINED; then
 else
     if $RAILWAY_AVAILABLE; then
         if $PROJECT_LINKED; then
-            DATABASE_URL="$(railway variables -s Postgres --json | jq .DATABASE_PUBLIC_URL -cMr)" $COMMAND $@
+            DATABASE_URL="$(railway variables --service Postgres --environment development --json | jq .DATABASE_PUBLIC_URL -cMr)" $COMMAND $@
         else
             echo "error: Railway project not linked."
             echo "Run 'railway link' to link the project."

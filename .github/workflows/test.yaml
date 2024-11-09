@@ -2,6 +2,12 @@ name: Pytest
 
 on: [pull_request]
 
+# https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs
+# Required by MishaKav/pytest-coverage-comment
+permissions:
+  checks: write
+  pull-requests: write
+
 jobs:
   test:
     runs-on: ubuntu-latest
