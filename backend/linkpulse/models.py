@@ -60,6 +60,10 @@ class Session(BaseModel):
     created_at = DateTimeField(default=utc_now)
     last_used = DateTimeField(null=True)
 
+    @property
+    def expiry_utc(self) -> datetime.datetime:
+        return self.expiry.replace(tzinfo=datetime.timezone.utc)  # type: ignore
+
     def is_expired(
         self, revoke: bool = True, now: Optional[datetime.datetime] = None
     ) -> bool:
@@ -69,7 +73,7 @@ class Session(BaseModel):
         if now is None:
             now = utc_now()
 
-        if self.expiry < now:
+        if self.expiry_utc < now:
             if revoke:
                 self.delete_instance()
             return True
