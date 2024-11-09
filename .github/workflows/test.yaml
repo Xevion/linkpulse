@@ -31,9 +31,10 @@ jobs:
 
       - name: Install dependencies
         run: cd backend && poetry install --no-interaction --no-root
-
-      - name: Install library
-        run: cd backend && poetry install --no-interaction
+      
+      # Disable for now, remove if ultimately not needed.
+      # - name: Install library
+      #   run: cd backend && poetry install --no-interaction
       
       - name: Acquire Database URL from Railway
         env:
@@ -41,12 +42,15 @@ jobs:
           SERVICE_ID: Postgres
           ENVIRONMENT_ID: development
         run: |
-          bash <(curl -fsSL cli.new)
+          bash <(curl -fsSL cli.new) --verbose --yes
           DATABASE_URL=$(railway variables --service $SERVICE_ID --environment $ENVIRONMENT_ID --json | jq -cMr .DATABASE_PUBLIC_URL)
           echo "::add-mask::$DATABASE_URL"
           echo "DATABASE_URL=$DATABASE_URL" >> "$GITHUB_ENV"
 
       - name: Pytest
+        env:
+          LOG_LEVEL: DEBUG
+          LOG_JSON_FORMAT: false
         run: |
           cd backend
           set -o pipefail  # otherwise 'tee' will eat the exit code
