@@ -13,22 +13,34 @@ jobs:
             const fs = require('fs');
             const path = 'CHANGELOG.md';
             const changelog = fs.readFileSync(path, 'utf8');
+            const errors = [];
 
-            // Check for 'UNRELEASED'
-            if (changelog.includes('UNRELEASED')) {
-              throw new Error('Changelog contains "UNRELEASED"');
-            }
-            
             // Check each line that starts with '##' for the version & date format
-            const lines = changelog.split('\n');
-            for (const line of lines) {
-              if (line.startsWith('## ')) {
-                // Expected format: '## [X.Y.Z] - YYYY-MM-DD'
-                const pattern = /^\d+\.\d+\.\d+ - \d{4}-\d{2}-\d{2}$/;
-                if (pattern.test(line)) {
-                  throw new Error(`Invalid version/date format: ${line}`);
-                }
+            changelog.split('\n').forEach((line, index) => {
+              index += 1;
+
+              if (!line.startsWith('## '))
+                return;
+
+              if (line.toLowerCase().includes('unreleased')) {
+                const message = `Unreleased section found at line ${index}: ${line}`;
+                const command = `::error file=${path},line=${index},endLine=${index},title=Unreleased Section Found::${message}`;
+                console.log(command);
+                errors.push(message);
               }
+
+              // Expected format: '## [X.Y.Z] - YYYY-MM-DD'
+              const pattern = /^\d+\.\d+\.\d+ - \d{4}-\d{2}-\d{2}$/;
+              if (pattern.test(line)) {
+                const message = `Invalid version/date format at line ${index}: ${line}`;
+                const command = `::error file=${path},line=${index},endLine=${index},title=Invalid Version/Date Format::${message}`;
+                console.log(command);
+                errors.push(message);
+              }
+            });
+
+            if (errors.length > 0) {
+              throw new Error(errors.join('\n'));
             }
             
   draft:
