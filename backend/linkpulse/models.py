@@ -9,7 +9,15 @@ from typing import Optional
 
 import structlog
 from linkpulse.utilities import utc_now
-from peewee import AutoField, CharField, DateTimeField, ForeignKeyField, BitField, Model
+from peewee import (
+    AutoField,
+    BitField,
+    CharField,
+    Check,
+    DateTimeField,
+    ForeignKeyField,
+    Model,
+)
 from playhouse.db_url import connect
 
 logger = structlog.get_logger()
@@ -59,6 +67,13 @@ class Session(BaseModel):
 
     created_at = DateTimeField(default=utc_now)
     last_used = DateTimeField(null=True)
+
+    class Meta:
+        constraints = [
+            Check("LENGTH(token) = 32"),
+            Check("expiry > created_at"),
+            Check("last_used IS NULL OR last_used <= created_at"),
+        ]
 
     @property
     def expiry_utc(self) -> datetime.datetime:
