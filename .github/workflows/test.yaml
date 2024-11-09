@@ -42,7 +42,9 @@ jobs:
           ENVIRONMENT_ID: development
         run: |
           bash <(curl -fsSL cli.new)
-          echo "DATABASE_URL=$(railway variables --service $SERVICE_ID --environment $ENVIRONMENT_ID --json | jq -cMr .DATABASE_PUBLIC_URL)" >> "$GITHUB_ENV"
+          DATABASE_URL=$(railway variables --service $SERVICE_ID --environment $ENVIRONMENT_ID --json | jq -cMr .DATABASE_PUBLIC_URL)
+          echo "::add-mask::$DATABASE_URL"
+          echo "DATABASE_URL=$DATABASE_URL" >> "$GITHUB_ENV"
 
       - name: Pytest
         run: |
