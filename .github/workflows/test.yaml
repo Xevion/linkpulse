@@ -33,8 +33,8 @@ jobs:
         id: cached-pip-wheels
         uses: actions/cache@v4
         with:
-          path: ~/.cache
           key: venv-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
+          path: .venv  # While ~/.cache is a fine default, I want to separate this cache from other caches
 
       - name: Install dependencies
         run: cd backend && poetry install --no-interaction --no-root
