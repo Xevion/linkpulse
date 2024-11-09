@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+## Added
+
+- backend: `pwdlib[argon2]` for password hashing
+- backend: provided `LOG_JSON_FORMAT` and `LOG_LEVEL` environment variable defaults in `run.sh` development script
+- backend: `User` model, `Session` model with migration script
+- backend: `utc_now` helper function
+- frontend: Added `clsx` package
+
+## Changed
+
+- frontend: Updated `eslint` to `9.x.x`, `@types/node` to `22.9.x`
+
+## Removed
+
+- frontend: Removed `@nkzw/eslint-config` package
+- backend: `IPAddress` Model (definition + DB state via migration) & all related code
+
 ## [0.2.2] - 2024-11-01
 
 ### Added
