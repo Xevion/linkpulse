@@ -54,7 +54,10 @@ jobs:
             let labels = context.payload.pull_request.labels;
 
             if (labels.some(l => forbiddenLabels.includes(l.name))) {
-              throw new Error(`Forbidden labels detected: ${forbiddenLabels.join(', ')}`);
+                const message = `Forbidden labels detected: ${forbiddenLabels.join(', ')}`;
+                const command = `::error file=${__filename},line=1,endLine=1,title=Forbidden Labels Detected::${message}`;
+                console.log(command);
+                throw new Error(message);
             }
 
   
