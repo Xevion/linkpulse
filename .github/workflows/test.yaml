@@ -74,7 +74,6 @@ jobs:
 
       - name: Pytest coverage comment
         id: coverageComment
-        if: steps.check-coverage-files.outputs.success == 'true'
         uses: MishaKav/pytest-coverage-comment@main
         with:
           pytest-coverage-path: backend/pytest-coverage.txt
