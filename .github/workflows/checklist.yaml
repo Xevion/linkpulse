@@ -24,7 +24,8 @@ jobs:
                   return;
 
                 if (line.toLowerCase().includes('unreleased')) {
-                  core.error({
+                  const message = 'Unreleased section found. Please release the changes before merging.';
+                  core.error(message, {
                     title: 'Unreleased Section Found',
                     file: path,
                     startline: index,
@@ -35,7 +36,8 @@ jobs:
                 // Expected format: '## [X.Y.Z] - YYYY-MM-DD'
                 const pattern = /^\d+\.\d+\.\d+ - \d{4}-\d{2}-\d{2}$/;
                 if (pattern.test(line)) {
-                  core.error({
+                  const message = 'Invalid version/date format. Expected: "## [X.Y.Z] - YYYY-MM-DD"';
+                  core.error(message, {
                     title: 'Invalid Version/Date Format',
                     file: path,
                     startline: index,
