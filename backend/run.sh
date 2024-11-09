@@ -10,7 +10,7 @@ fi
 export ENVIRONMENT=${ENVIRONMENT:-development}
 export LOG_JSON_FORMAT=${LOG_JSON_FORMAT:-false}
 export LOG_LEVEL=${LOG_LEVEL:-debug}
-COMMAND='poetry run python3 -m linkpulse $@'
+COMMAND="poetry run python3 -m linkpulse $@"
 
 # If arguments start with 'poetry run pytest' or 'pytest' use args as is
 if [[ "$1" == "poetry" && "$2" == "run" && "$3" == "pytest" ]]; then
