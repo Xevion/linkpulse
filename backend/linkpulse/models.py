@@ -3,7 +3,6 @@ This module defines the database models for the LinkPulse backend.
 It also provides a base model with database connection details.
 """
 
-from datetime import datetime
 from os import getenv
 
 import structlog

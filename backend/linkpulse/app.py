@@ -45,7 +45,7 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
         db.close()
 
 
-from routers import authentication
+from linkpulse.routers import authentication
 
 app = FastAPI(lifespan=lifespan, default_response_class=ORJSONResponse)
 app.include_router(authentication.router)
@@ -74,6 +74,7 @@ app.add_middleware(CorrelationIdMiddleware)
 
 @app.get("/health")
 async def health():
+    # TODO: Check database connection
     return "OK"
 
 
