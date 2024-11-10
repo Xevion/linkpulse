@@ -43,7 +43,7 @@ class User(BaseModel):
     email = CharField(unique=True, max_length=45)
     flags = BitField()
     # full hash with encoded salt/parameters, argon2 but assume nothing
-    password_hash = CharField(max_length=96)
+    password_hash = CharField(max_length=97)
     created_at = DateTimeField(default=utc_now)
     updated_at = DateTimeField(default=utc_now)
     # prefer soft deletes before hard deletes
