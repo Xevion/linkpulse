@@ -36,7 +36,7 @@ with suppress(ImportError):
 
 def migrate(migrator: Migrator, database: pw.Database, *, fake=False):
     """Write your migrations here."""
-    
+
     @migrator.create_model
     class User(pw.Model):
         id = pw.AutoField()
@@ -48,12 +48,12 @@ def migrate(migrator: Migrator, database: pw.Database, *, fake=False):
         class Meta:
             table_name = "user"
 
-    migrator.remove_model('ipaddress')
+    migrator.remove_model("ipaddress")
 
 
 def rollback(migrator: Migrator, database: pw.Database, *, fake=False):
     """Write your rollback migrations here."""
-    
+
     @migrator.create_model
     class IPAddress(pw.Model):
         ip = pw.CharField(max_length=255, primary_key=True)
@@ -63,4 +63,4 @@ def rollback(migrator: Migrator, database: pw.Database, *, fake=False):
         class Meta:
             table_name = "ipaddress"
 
-    migrator.remove_model('user')
+    migrator.remove_model("user")

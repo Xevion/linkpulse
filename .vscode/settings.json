@@ -4,19 +4,26 @@
     "backref",
     "bpython",
     "Callsite",
+    "clsx",
     "excepthook",
     "inmemory",
     "linkpulse",
     "migratehistory",
     "Nixpacks",
     "ORJSON",
+    "pext",
+    "pwdlib",
+    "pytest",
     "pytz",
+    "rtype",
     "starlette",
     "structlog",
+    "tailwindcss",
     "timestamper"
   ],
   "python.analysis.extraPaths": ["./backend/"],
   "[github-actions-workflow]": {
     "editor.formatOnSave": false
-  }
+  },
+  "python.analysis.diagnosticMode": "workspace"
 }
