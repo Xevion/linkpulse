@@ -1,5 +1,7 @@
 from typing import Tuple, Optional
 
+from fastapi import status
+from fastapi.responses import ORJSONResponse
 from pwdlib import PasswordHash
 from pwdlib.hashers.argon2 import Argon2Hasher
 from fastapi import APIRouter, Depends
@@ -64,7 +66,10 @@ async def login(body: LoginBody):
     if user is None:
         # Hash regardless of user existence to prevent timing attacks
         hasher.verify(body.password, dummy_hash)
-        return LoginError(error="Invalid email or password")
+        return ORJSONResponse(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            content=LoginError(error="Invalid email or password"),
+        )
 
     # valid, updated_hash = hasher.verify_and_update(body.password, existing_hash)
 

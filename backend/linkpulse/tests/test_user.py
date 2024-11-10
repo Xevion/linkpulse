@@ -9,6 +9,4 @@ logger = structlog.get_logger()
 
 @pytest.fixture
 def user():
-    return User.create(
-        email=random_email(), password_hash=hasher.hash(random_string(64))
-    )
+    return User.create(email=random_email(), password_hash=hasher.hash("password"))
