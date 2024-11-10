@@ -33,8 +33,10 @@ def drop_color_message_key(_: Any, __: Any, event_dict: EventDict) -> EventDict:
 
 def setup_logging(json_logs: Optional[bool] = None, log_level: Optional[str] = None) -> None:
     # Pull from environment variables, apply defaults if not set
-    json_logs = json_logs or os.getenv("LOG_JSON_FORMAT", "true").lower() == "true"
-    log_level = log_level or os.getenv("LOG_LEVEL", "INFO")
+    if json_logs is None:
+        json_logs = os.getenv("LOG_JSON_FORMAT", "true").lower() == "true"
+    if log_level is None:
+        log_level = os.getenv("LOG_LEVEL", "INFO")
 
     def flatten(n):
         """
