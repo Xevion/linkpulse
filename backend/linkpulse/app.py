@@ -10,7 +10,6 @@ from fastapi import FastAPI
 from fastapi.responses import ORJSONResponse
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.inmemory import InMemoryBackend
-from fastapi_cache.decorator import cache
 from linkpulse.logging import setup_logging
 from linkpulse.middleware import LoggingMiddleware
 from linkpulse.utilities import get_db, is_development
@@ -45,10 +44,11 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
         db.close()
 
 
-from linkpulse.routers import authentication
+from linkpulse.routers import auth, misc
 
 app = FastAPI(lifespan=lifespan, default_response_class=ORJSONResponse)
-app.include_router(authentication.router)
+app.include_router(auth.router)
+app.include_router(misc.router)
 
 setup_logging()
 
@@ -70,23 +70,3 @@ if is_development:
 
 app.add_middleware(LoggingMiddleware)
 app.add_middleware(CorrelationIdMiddleware)
-
-
-@app.get("/health")
-async def health():
-    # TODO: Check database connection
-    return "OK"
-
-
-@app.get("/api/migration")
-@cache(expire=60)
-async def get_migration():
-    """
-    Returns the details of the most recent migration.
-    """
-    # Kind of insecure, but this is just a demo thing to show that migratehistory is available.
-    cursor = db.execute_sql(
-        "SELECT name, migrated_at FROM migratehistory ORDER BY migrated_at DESC LIMIT 1"
-    )
-    name, migrated_at = cursor.fetchone()
-    return {"name": name, "migrated_at": migrated_at}
