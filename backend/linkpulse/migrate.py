@@ -178,9 +178,10 @@ def main(*args: str) -> None:
     else:
         logger.info("No database changes detected.")
 
-    if len(current) > 5:
+    migration_limit: int = 15
+    if len(current) > migration_limit:
         if questionary.confirm(
-            "There are more than 5 migrations applied. Do you want to merge them?",
+            f"There are more than {migration_limit} migrations applied. Do you want to merge them?",
             default=False,
         ).ask():
             logger.info("Merging migrations...")
