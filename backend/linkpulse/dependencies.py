@@ -4,6 +4,8 @@ from fastapi import HTTPException, Request, Response, status
 from limits.aio.strategies import MovingWindowRateLimiter
 from limits.aio.storage import MemoryStorage
 from limits import parse
+from linkpulse.models import Session
+from dataclasses import dataclass
 
 storage = MemoryStorage()
 strategy = MovingWindowRateLimiter(storage)
@@ -39,3 +41,37 @@ class RateLimiter:
                 headers={"Retry-After": self.retry_after},
             )
         return True
+
+
+@dataclass
+class SessionModel:
+    user_id: str
+    session_id: str
+    expires_at: int
+
+
+class SessionDependency:
+    def __init__(self, required: bool = False):
+        self.required = required
+
+    async def __call__(self, request: Request, response: Response):
+        session_token = request.cookies.get("session")
+
+        # If not present, raise 401 if required
+        if session_token is None:
+            if self.required:
+                raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
+            return None
+
+        # Get session from database
+        session = Session.get_or_none(Session.token == session_token)
+
+        # This doesn't differentiate between expired or completely invalid sessions
+        if session is None or session.is_expired(revoke=True):
+            if self.required:
+                logger.debug("Session Cookie Revoked", token=session_token)
+                response.set_cookie("session", "", max_age=0)
+                raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
+            return None
+
+        return session
