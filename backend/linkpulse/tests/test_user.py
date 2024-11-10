@@ -2,7 +2,7 @@ import pytest
 import structlog
 from linkpulse.models import User
 from linkpulse.routers.auth import hasher
-from linkpulse.tests.random import random_email, random_string
+from linkpulse.tests.random import random_email
 
 logger = structlog.get_logger()
 

@@ -2,12 +2,13 @@ import structlog
 from fastapi import status
 from fastapi.testclient import TestClient
 from linkpulse.app import app
+from linkpulse.tests.test_user import user
 
 logger = structlog.get_logger()
 
 
-def test_rate_limit():
-    args = {"email": "test@test.com", "password": "test"}
+def test_rate_limit(user):
+    args = {"email": user.email, "password": "password"}
 
     with TestClient(app) as client:
         for _ in range(6):

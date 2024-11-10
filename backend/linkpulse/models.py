@@ -4,20 +4,13 @@ It also provides a base model with database connection details.
 """
 
 import datetime
+import secrets
 from os import getenv
 from typing import Optional
 
 import structlog
 from linkpulse.utilities import utc_now
-from peewee import (
-    AutoField,
-    BitField,
-    CharField,
-    Check,
-    DateTimeField,
-    ForeignKeyField,
-    Model,
-)
+from peewee import AutoField, BitField, CharField, Check, DateTimeField, ForeignKeyField, Model
 from playhouse.db_url import connect
 
 logger = structlog.get_logger()
@@ -81,13 +74,16 @@ class Session(BaseModel):
             ),
         ]
 
+    @classmethod
+    def generate_token(cls) -> str:
+        alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+        return "".join(secrets.choice(alphabet) for _ in range(32))
+
     @property
     def expiry_utc(self) -> datetime.datetime:
         return self.expiry.replace(tzinfo=datetime.timezone.utc)  # type: ignore
 
-    def is_expired(
-        self, revoke: bool = True, now: Optional[datetime.datetime] = None
-    ) -> bool:
+    def is_expired(self, revoke: bool = True, now: Optional[datetime.datetime] = None) -> bool:
         """
         Check if the session is expired. If `revoke` is True, the session will be automatically revoked if it is expired.
         """
