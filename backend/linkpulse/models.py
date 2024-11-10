@@ -50,6 +50,9 @@ class User(BaseModel):
     deleted_at = DateTimeField(null=True)
     deleted = flags.flag(1)
 
+    # TODO: delete method, ensure sessions are deleted as well
+    # TODO: undelete method
+
 
 class Session(BaseModel):
     """
@@ -66,7 +69,7 @@ class Session(BaseModel):
     expiry = DateTimeField()
 
     created_at = DateTimeField(default=utc_now)
-    last_used = DateTimeField(null=True)
+    last_used = DateTimeField(default=None, null=True)
 
     class Meta:
         constraints = [
@@ -104,3 +107,6 @@ class Session(BaseModel):
         if now is None:
             now = utc_now()
         self.last_used = now  # type: ignore
+        # TODO: This should be buffered, as it'll be called *constantly*, perhaps every single request.
+        # The ideal solution would be emitting updates to a Redis-based cache, and then flushing to the database every few seconds/minute.
+        self.save()
