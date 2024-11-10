@@ -11,13 +11,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - A release checklist to the `CHANGELOG.md` file, as a reminder for procedure.
 - An action workflow for invoking `pytest`, with coverage report generation in CI/CD
-- backend: Rate Limiting via `limits`, custom `RateLimiter` dependency
-- backend: `Session` model constraints for `token` length, `expiry` & `last_used` timestamps
-- backend: `pwdlib[argon2]` for password hashing
-- backend: provided `LOG_JSON_FORMAT` and `LOG_LEVEL` environment variable defaults in `run.sh` development script
+- backend: Rate Limiting via custom `RateLimiter` dependency
 - backend: `User` model, `Session` model with migration script
+- backend: `Session` model constraints for `token` length, `expiry` & `last_used` timestamps
+- backend: `SessionDependency` for easy session validation, enforcement & handling per route
+- backend: provided `LOG_JSON_FORMAT` and `LOG_LEVEL` environment variable defaults in `run.sh` development script
+- backend: Simple `/health` & `/api/migrations` endpoint tests
 - backend: `utc_now` helper function
-- backend: `pytest`, simple `/health` & `/api/migrations` endpoint tests
+- backend: `pwdlib[argon2]`, `pytest` (`pytest-cov`, `pytest-xdist`), `limits`, `httpx`, `email-validator` pacakges
 - frontend: Added `clsx` package
 
 ## Changed
