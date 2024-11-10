@@ -25,8 +25,14 @@ def session(user):
 
 @pytest.fixture
 def expired_session(session):
+    session.created_at = utc_now() - timedelta(hours=2)  # Required to bypass the constraint
     session.expiry = utc_now() - timedelta(hours=1)
+    session.save()
     return session
+
+
+def test_expired_session_fixture(expired_session):
+    assert expired_session.is_expired() is True
 
 
 def test_session_create(session):
