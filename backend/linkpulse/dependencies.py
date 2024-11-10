@@ -1,8 +1,8 @@
 import os
 import structlog
 from fastapi import HTTPException, Request, Response, status
-from limits.strategies import MovingWindowRateLimiter
-from limits.storage import MemoryStorage
+from limits.aio.strategies import MovingWindowRateLimiter
+from limits.aio.storage import MemoryStorage
 from limits import parse
 
 storage = MemoryStorage()
@@ -31,7 +31,7 @@ class RateLimiter:
             # The reason for this is so tests don't compete with each other for rate limiting
             key += "." + os.environ["PYTEST_CURRENT_TEST"]
 
-        if not strategy.hit(self.limit, key):
+        if not await strategy.hit(self.limit, key):
             logger.warning("Rate limit exceeded", key=key)
             raise HTTPException(
                 status_code=status.HTTP_429_TOO_MANY_REQUESTS,
