@@ -36,11 +36,7 @@ class ExtendedRouter(Router):
             try:
                 modules = models
                 if isinstance(module, bool):
-                    modules = [
-                        m
-                        for _, m, ispkg in pkgutil.iter_modules([f"{router.CURDIR}"])
-                        if ispkg
-                    ]
+                    modules = [m for _, m, ispkg in pkgutil.iter_modules([f"{router.CURDIR}"]) if ispkg]
                 models = [m for module in modules for m in router.load_models(module)]
 
             except ImportError:
@@ -48,7 +44,7 @@ class ExtendedRouter(Router):
                 return None
 
         if self.ignore:
-            models = [m for m in models if m._meta.name not in self.ignore]  # type: ignore[]
+            models = [m for m in models if m._meta.name not in self.ignore]  # type: ignore
 
         for migration in self.diff:
             self.run_one(migration, self.migrator, fake=True)
@@ -91,9 +87,7 @@ def main(*args: str) -> None:
         diff = router.diff
 
         if len(diff) == 0:
-            logger.info(
-                "No migrations found, no pending migrations to apply. Creating initial migration."
-            )
+            logger.info("No migrations found, no pending migrations to apply. Creating initial migration.")
 
             migration = router.create("initial", auto=target_models)
             if not migration:
@@ -107,13 +101,9 @@ def main(*args: str) -> None:
         logger.info(
             "Note: Selecting a migration will apply all migrations up to and including the selected migration."
         )
-        logger.info(
-            "e.g. Applying 004 while only 001 is applied would apply 002, 003, and 004."
-        )
+        logger.info("e.g. Applying 004 while only 001 is applied would apply 002, 003, and 004.")
 
-        choice = questionary.select(
-            "Select highest migration to apply:", choices=diff
-        ).ask()
+        choice = questionary.select("Select highest migration to apply:", choices=diff).ask()
         if choice is None:
             logger.warning(
                 "For safety reasons, you won't be able to create migrations without applying the pending ones."
@@ -163,14 +153,10 @@ def main(*args: str) -> None:
                 logger.info(f"Migration created: {migration}")
 
                 if len(router.diff) == 1:
-                    if questionary.confirm(
-                        "Do you want to apply this migration immediately?"
-                    ).ask():
+                    if questionary.confirm("Do you want to apply this migration immediately?").ask():
                         router.run(migration)
                         logger.info("Done.")
-                        logger.warning(
-                            "!!! Commit and push this migration file immediately!"
-                        )
+                        logger.warning("!!! Commit and push this migration file immediately!")
             else:
                 raise RuntimeError(
                     "Changes anticipated with show() but no migration created with create(), model definition may have reverted."
@@ -178,10 +164,10 @@ def main(*args: str) -> None:
     else:
         logger.info("No database changes detected.")
 
-    migration_limit: int = 15
-    if len(current) > migration_limit:
+    migration_squash_threshold: int = 15
+    if len(current) > migration_squash_threshold:
         if questionary.confirm(
-            f"There are more than {migration_limit} migrations applied. Do you want to merge them?",
+            f"There are more than {migration_squash_threshold} migrations applied. Do you want to merge them?",
             default=False,
         ).ask():
             logger.info("Merging migrations...")
