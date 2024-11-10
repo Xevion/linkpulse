@@ -32,6 +32,7 @@
     "vitest"
   ],
   "python.analysis.extraPaths": ["./backend/"],
+  "editor.formatOnSave": true,
   "[github-actions-workflow]": {
     "editor.formatOnSave": false
   },
