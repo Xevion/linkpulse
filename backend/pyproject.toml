@@ -31,6 +31,7 @@ hypercorn = "^0.17.3"
 pwdlib = {extras = ["argon2"], version = "^0.2.1"}
 pytest-xdist = "^3.6.1"
 email-validator = "^2.2.0"
+limits = "^3.13.0"
 
 
 [tool.poetry.group.dev.dependencies]

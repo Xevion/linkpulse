@@ -1,9 +1,16 @@
 from typing import Tuple, Optional
 
-from fastapi import APIRouter
+from pwdlib import PasswordHash
+from pwdlib.hashers.argon2 import Argon2Hasher
+from fastapi import APIRouter, Depends
+from pydantic import BaseModel, EmailStr, Field
+from linkpulse.dependencies import RateLimiter
 from linkpulse.models import User, Session
 
 router = APIRouter()
+
+hasher = PasswordHash([Argon2Hasher()])
+dummy_hash = "$argon2id$v=19$m=65536,t=3,p=4$Ii3hm5/NqcJddQDFK24Wtw$I99xV/qkaLROo0VZcvaZrYMAD9RTcWzxY5/RbMoRLQ4"
 
 
 def validate_session(
@@ -39,10 +46,28 @@ def validate_session(
     return True, True, session.user
 
 
-@router.post("/api/login")
-async def login():
-    # Validate parameters
-    # Hash regardless of user existence to prevent timing attacks
+class LoginBody(BaseModel):
+    email: EmailStr
+    password: str = Field(min_length=1)
+    remember_me: bool = False
+
+
+class LoginError(BaseModel):
+    error: str
+
+
+@router.post("/api/login", dependencies=[Depends(RateLimiter("6/minute"))])
+async def login(body: LoginBody):
+    # Acquire user by email
+    user = User.get_or_none(User.email == body.email)
+
+    if user is None:
+        # Hash regardless of user existence to prevent timing attacks
+        hasher.verify(body.password, dummy_hash)
+        return LoginError(error="Invalid email or password")
+
+    # valid, updated_hash = hasher.verify_and_update(body.password, existing_hash)
+
     # Check if user exists, return 401 if not
     # Check if password matches, return 401 if not
     # Create session
