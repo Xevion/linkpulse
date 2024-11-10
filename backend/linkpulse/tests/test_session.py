@@ -20,9 +20,7 @@ def db():
 
 @pytest.fixture
 def session(user):
-    return Session.create(
-        user=user, token=random_string(32), expiry=utc_now() + timedelta(hours=1)
-    )
+    return Session.create(user=user, token=Session.generate_token(), expiry=utc_now() + timedelta(hours=1))
 
 
 @pytest.fixture
@@ -55,21 +53,17 @@ def test_expiry_invalid(expired_session):
 
 
 def test_session_constraint_token_length(user):
+    Session.create(user=user, token=Session.generate_token(), expiry=utc_now() + timedelta(hours=1))
+
     with pytest.raises(IntegrityError):
-        Session.create(
-            user=user, token=random_string(31), expiry=utc_now() + timedelta(hours=1)
-        )
-    Session.create(
-        user=user, token=random_string(32), expiry=utc_now() + timedelta(hours=1)
-    )
+        Session.create(user=user, token=Session.generate_token()[:-1], expiry=utc_now() + timedelta(hours=1))
 
 
 def test_session_constraint_expiry(user):
+    Session.create(user=user, token=Session.generate_token(), expiry=utc_now() + timedelta(minutes=1))
+
     with pytest.raises(IntegrityError):
-        Session.create(user=user, token=random_string(31), expiry=utc_now())
-    Session.create(
-        user=user, token=random_string(32), expiry=utc_now() + timedelta(minutes=1)
-    )
+        Session.create(user=user, token=Session.generate_token(), expiry=utc_now())
 
 
 def test_validate_session(db, session):
