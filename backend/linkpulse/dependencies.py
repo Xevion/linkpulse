@@ -72,8 +72,11 @@ class SessionDependency:
         if session is None or session.is_expired(revoke=True):
             if self.required:
                 logger.debug("Session Cookie Revoked", token=session_token)
-                response.set_cookie("session", "", max_age=0)
-                raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
+                response.delete_cookie("session")
+                headers = {"set-cookie": response.headers["set-cookie"]}
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized", headers=headers
+                )
             return None
 
         return session

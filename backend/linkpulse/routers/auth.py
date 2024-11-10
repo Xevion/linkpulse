@@ -126,7 +126,7 @@ async def logout(
         count = Session.delete().where(Session.user == session.user).execute()
         logger.debug("All sessions deleted", user=session.user.email, count=count, source_token=session.token)
 
-    response.set_cookie("session", "", max_age=0)
+    response.delete_cookie("session", "", max_age=0)
 
 
 @router.post("/api/register")

@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from wsgiref import headers
 
 import pytest
 import structlog
@@ -76,6 +77,6 @@ def test_auth_logout_expired(expired_session):
         # Attempt to logout
         response = client.post("/api/logout")
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
-        assert client.cookies.get("session") is None
+        assert response.headers.get("set-cookie") is not None
 
         # TODO: Ensure ?all=True doesn't do anything either
