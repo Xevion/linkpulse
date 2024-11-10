@@ -10,8 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Added
 
 - A release checklist to the `CHANGELOG.md` file, as a reminder for procedure.
-- An action workflow for invoking `pytest`
-- Pytest coverage report generation in the CI/CD pipeline
+- An action workflow for invoking `pytest`, with coverage report generation in CI/CD
+- backend: Rate Limiting via `limits`, custom `RateLimiter` dependency
+- backend: `Session` model constraints for `token` length, `expiry` & `last_used` timestamps
 - backend: `pwdlib[argon2]` for password hashing
 - backend: provided `LOG_JSON_FORMAT` and `LOG_LEVEL` environment variable defaults in `run.sh` development script
 - backend: `User` model, `Session` model with migration script
@@ -21,6 +22,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Changed
 
+- Set `black` formatter line length to 120 characters
+- backend: migration squashing threshold to 15
+- backend: moved top level `app` routes to `router.misc`
 - frontend: Updated `eslint` to `9.x.x`, `@types/node` to `22.9.x`
 
 ## Removed
