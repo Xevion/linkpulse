@@ -20,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - backend: Simple `/health` & `/api/migrations` endpoint tests
 - backend: `utc_now` helper function
 - backend: `pwdlib[argon2]`, `pytest` (`pytest-cov`, `pytest-xdist`), `limits`, `httpx`, `email-validator` pacakges
-- frontend: Added `clsx` package
+- frontend: Re-initialized with `vite` template, setup `@tanstack/router` & `shadcn` components.
 
 ## Changed
 
