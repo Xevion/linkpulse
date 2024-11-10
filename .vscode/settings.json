@@ -6,24 +6,46 @@
     "Callsite",
     "clsx",
     "excepthook",
+    "humanfs",
+    "humanwhocodes",
     "inmemory",
+    "jridgewell",
     "linkpulse",
     "migratehistory",
     "Nixpacks",
+    "nkzw",
     "ORJSON",
     "pext",
+    "postcss",
     "pwdlib",
+    "pyproject",
     "pytest",
     "pytz",
+    "riscv",
+    "rollup",
     "rtype",
     "starlette",
     "structlog",
+    "sugarss",
     "tailwindcss",
-    "timestamper"
+    "timestamper",
+    "vitest"
   ],
   "python.analysis.extraPaths": ["./backend/"],
   "[github-actions-workflow]": {
     "editor.formatOnSave": false
   },
-  "python.analysis.diagnosticMode": "workspace"
+  "python.analysis.diagnosticMode": "workspace",
+  "cSpell.ignorePaths": [
+    "package-lock.json",
+    "node_modules",
+    "vscode-extension",
+    ".git/objects",
+    ".vscode",
+    ".vscode-insiders",
+    "settings.json",
+    "*.lock",
+    "*lock.*",
+    "package.json"
+  ]
 }
