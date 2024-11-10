@@ -70,9 +70,12 @@ class Session(BaseModel):
 
     class Meta:
         constraints = [
-            Check("LENGTH(token) = 32"),
-            Check("expiry > created_at"),
-            Check("last_used IS NULL OR last_used <= created_at"),
+            Check("LENGTH(token) = 32", name="session_token_length"),
+            Check("expiry > created_at", name="session_expiry_created_at"),
+            Check(
+                "last_used IS NULL OR last_used >= created_at",
+                name="session_last_used_created_at",
+            ),
         ]
 
     @property

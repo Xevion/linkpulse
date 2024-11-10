@@ -48,7 +48,7 @@ def migrate(migrator: Migrator, database: pw.Database, *, fake=False):
     migrator.add_constraint(
         "session",
         "session_last_used_created_at",
-        pw.Check("last_used IS NULL OR last_used <= created_at"),
+        pw.Check("last_used IS NULL OR last_used >= created_at"),
     )
 
 
