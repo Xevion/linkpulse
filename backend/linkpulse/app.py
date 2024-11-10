@@ -30,9 +30,7 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     db.connect()
     db.create_tables([models.User, models.Session])
 
-    FastAPICache.init(
-        backend=InMemoryBackend(), prefix="fastapi-cache", cache_status_header="X-Cache"
-    )
+    FastAPICache.init(backend=InMemoryBackend(), prefix="fastapi-cache", cache_status_header="X-Cache")
 
     scheduler.start()
 

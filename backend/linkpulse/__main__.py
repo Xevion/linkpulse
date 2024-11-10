@@ -59,7 +59,7 @@ def main(*args: str) -> None:
         # import most useful objects, models, and functions
         lp = linkpulse  # alias
         from linkpulse.app import app
-        from linkpulse.models import BaseModel, User, Session
+        from linkpulse.models import BaseModel, Session, User
         from linkpulse.utilities import get_db
 
         db = get_db()

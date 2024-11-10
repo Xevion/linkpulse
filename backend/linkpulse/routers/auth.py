@@ -3,7 +3,7 @@ from typing import Annotated, Optional, Tuple
 
 import structlog
 from fastapi import APIRouter, Depends, Response, status
-from linkpulse.dependencies import SessionDependency, RateLimiter, SessionModel
+from linkpulse.dependencies import RateLimiter, SessionDependency, SessionModel
 from linkpulse.models import Session, User
 from linkpulse.utilities import utc_now
 from pwdlib import PasswordHash

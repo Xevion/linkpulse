@@ -1,13 +1,13 @@
 from datetime import datetime, timedelta
+
+import pytest
 import structlog
 from fastapi import status
 from fastapi.testclient import TestClient
 from linkpulse.app import app
+from linkpulse.tests.test_session import expired_session, session
 from linkpulse.tests.test_user import user
-from linkpulse.tests.test_session import session, expired_session
 from linkpulse.utilities import utc_now
-
-import pytest
 
 logger = structlog.get_logger()
 

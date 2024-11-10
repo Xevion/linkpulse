@@ -1,11 +1,12 @@
 import os
+from dataclasses import dataclass
+
 import structlog
 from fastapi import HTTPException, Request, Response, status
-from limits.aio.strategies import MovingWindowRateLimiter
-from limits.aio.storage import MemoryStorage
 from limits import parse
+from limits.aio.storage import MemoryStorage
+from limits.aio.strategies import MovingWindowRateLimiter
 from linkpulse.models import Session
-from dataclasses import dataclass
 
 storage = MemoryStorage()
 strategy = MovingWindowRateLimiter(storage)

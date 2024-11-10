@@ -3,11 +3,10 @@ from datetime import timedelta
 import pytest
 import structlog
 from linkpulse.models import Session
+from linkpulse.routers.auth import validate_session
 from linkpulse.tests.random import random_string
 from linkpulse.tests.test_user import user
 from linkpulse.utilities import utc_now
-from linkpulse.routers.auth import validate_session
-
 from peewee import IntegrityError
 
 logger = structlog.get_logger()
