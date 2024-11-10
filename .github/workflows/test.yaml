@@ -64,7 +64,7 @@ jobs:
         run: |
           cd backend
           set -o pipefail  # otherwise 'tee' will eat the exit code
-          poetry run pytest --color=yes --cov=linkpulse --cov-report=term-missing:skip-covered --junitxml=pytest.xml | tee pytest-coverage.txt
+          poetry run pytest -n auto --color=yes --cov=linkpulse --cov-report=term-missing:skip-covered --junitxml=pytest.xml | tee pytest-coverage.txt
           
           # pytest-coverage-comment won't error if the files are missing
           if [ ! -f ./pytest-coverage.txt ] || [ ! -f ./pytest.xml ]; then
