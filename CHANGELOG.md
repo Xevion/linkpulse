@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - A release checklist to the `CHANGELOG.md` file, as a reminder for procedure.
 - An action workflow for invoking `pytest`, with coverage report generation in CI/CD
+- backend: Login & Logout routes
 - backend: Rate Limiting via custom `RateLimiter` dependency
 - backend: `User` model, `Session` model with migration script
 - backend: `Session` model constraints for `token` length, `expiry` & `last_used` timestamps
