@@ -1,10 +1,14 @@
 import pytest
+import structlog
 from linkpulse.models import User
-from linkpulse.tests.random import epoch, random_email, random_string
+from linkpulse.routers.auth import hasher
+from linkpulse.tests.random import random_email, random_string
+
+logger = structlog.get_logger()
 
 
 @pytest.fixture
 def user():
     return User.create(
-        email=random_email(), password_hash=str(epoch()) + random_string(64)
+        email=random_email(), password_hash=hasher.hash(random_string(64))
     )
