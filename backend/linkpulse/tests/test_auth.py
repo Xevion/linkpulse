@@ -64,6 +64,18 @@ def test_auth_login_logout(user):
 
 
 def test_auth_logout_expired(expired_session):
+    # Test that an expired session cannot be used to logout, but still removes the cookie
     with TestClient(app) as client:
         response = client.post("/api/logout")
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+        # Add expired session cookie
+        client.cookies.set("session", expired_session.token)
+        assert client.cookies.get("session") is not None
+
+        # Attempt to logout
+        response = client.post("/api/logout")
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        assert client.cookies.get("session") is None
+
+        # TODO: Ensure ?all=True doesn't do anything either

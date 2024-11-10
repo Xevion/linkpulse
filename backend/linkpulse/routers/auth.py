@@ -121,9 +121,10 @@ async def logout(
     # We can assume the session is valid via the dependency
     if not all:
         session.delete_instance()
+        logger.debug("Session deleted", user=session.user.email, token=session.token)
     else:
         count = Session.delete().where(Session.user == session.user).execute()
-        logger.debug("All sessions deleted", user=session.user.email, count=count)
+        logger.debug("All sessions deleted", user=session.user.email, count=count, source_token=session.token)
 
     response.set_cookie("session", "", max_age=0)
 

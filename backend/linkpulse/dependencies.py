@@ -59,6 +59,7 @@ class SessionDependency:
 
         # If not present, raise 401 if required
         if session_token is None:
+            logger.debug("No session cookie found", required=self.required)
             if self.required:
                 raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
             return None

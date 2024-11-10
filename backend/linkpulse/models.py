@@ -91,6 +91,7 @@ class Session(BaseModel):
             now = utc_now()
 
         if self.expiry_utc < now:
+            logger.debug("Session expired", token=self.token, user=self.user.email, revoke=revoke)
             if revoke:
                 self.delete_instance()
             return True
