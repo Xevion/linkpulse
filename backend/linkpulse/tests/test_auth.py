@@ -25,6 +25,7 @@ def test_auth_login(user):
         response = client.post("/api/login", json=args)
         assert response.status_code == status.HTTP_200_OK
         test_expiry(response, 0.5)
+        assert client.cookies.get("session") is not None
 
         # Remember Me, True
         response = client.post("/api/login", json={**args, "remember_me": True})

@@ -102,14 +102,15 @@ async def login(body: LoginBody, response: Response):
 
     # Create session
     token = Session.generate_token()
+    session_duration = remember_me_session_expiry if body.remember_me else default_session_expiry
     session = Session.create(
         token=token,
         user=user,
-        expiry=utc_now() + (remember_me_session_expiry if body.remember_me else default_session_expiry),
+        expiry=utc_now() + session_duration,
     )
 
     # Set Cookie of session token
-    response.set_cookie("session", token, samesite="strict")
+    response.set_cookie("session", token, samesite="strict", max_age=int(session_duration.total_seconds()))
     return {"email": user.email, "expiry": session.expiry}
 
 
