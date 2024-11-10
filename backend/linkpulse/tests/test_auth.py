@@ -4,6 +4,7 @@ from fastapi import status
 from fastapi.testclient import TestClient
 from linkpulse.app import app
 from linkpulse.tests.test_user import user
+from linkpulse.tests.test_session import session, expired_session
 from linkpulse.utilities import utc_now
 
 import pytest
@@ -42,4 +43,27 @@ def test_auth_login(user):
 
         # Wrong Password
         response = client.post("/api/login", json={**args, "password": "bad_password"})
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+
+def test_auth_login_logout(user):
+    """Test full login & logout cycle"""
+    args = {"email": user.email, "password": "password"}
+
+    with TestClient(app) as client:
+        response = client.post("/api/logout")
+        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+        response = client.post("/api/login", json=args)
+        assert response.status_code == status.HTTP_200_OK
+        assert client.cookies.get("session") is not None
+
+        response = client.post("/api/logout")
+        assert response.status_code == status.HTTP_200_OK
+        assert client.cookies.get("session") is None
+
+
+def test_auth_logout_expired(expired_session):
+    with TestClient(app) as client:
+        response = client.post("/api/logout")
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
