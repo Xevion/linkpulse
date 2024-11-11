@@ -58,5 +58,8 @@
     "*lock.*",
     "package.json",
     "routeTree.gen.ts"
-  ]
+  ],
+  "files.associations": {
+    "Caddyfile.*": "caddyfile"
+  }
 }
