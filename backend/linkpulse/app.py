@@ -44,6 +44,7 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
 
 from linkpulse.routers import auth, misc
 
+# TODO: Apply migrations on startup in production environments
 app = FastAPI(lifespan=lifespan, default_response_class=ORJSONResponse)
 app.include_router(auth.router)
 app.include_router(misc.router)

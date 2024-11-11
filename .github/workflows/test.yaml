@@ -36,6 +36,7 @@ jobs:
         id: cached-pip-wheels
         uses: actions/cache@v4
         with:
+          # TODO: Apparently this is failing for some reason, path does not exist? Fix after 0.3.0 release
           path: .venv  # While ~/.cache is a fine default, I want to separate this cache from other caches
           key: venv-${{ steps.setup-python.outputs.python-version }}-${{ env.POETRY_VERSION }}-${{ hashFiles('**/poetry.lock') }}
 
