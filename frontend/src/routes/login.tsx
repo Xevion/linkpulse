@@ -1,13 +1,24 @@
-import { createLazyFileRoute } from "@tanstack/react-router";
-
-export const Route = createLazyFileRoute("/login")({
-  component: Login,
-});
+import { createFileRoute, redirect } from "@tanstack/react-router";
+import { useUserStore } from "@/lib/state";
 
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { UserAuthForm } from "@/components/auth/UserAuthForm";
 import { Icons } from "@/components/icons";
+
+export const Route = createFileRoute("/login")({
+  beforeLoad: async ({ location }) => {
+    const isLoggedIn = useUserStore.getState().user !== null;
+
+    if (isLoggedIn) {
+      return redirect({
+        to: "/dashboard",
+        search: { redirect: location.href },
+      });
+    }
+  },
+  component: Login,
+});
 
 function Login() {
   return (
