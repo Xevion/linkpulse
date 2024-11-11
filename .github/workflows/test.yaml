@@ -64,6 +64,8 @@ jobs:
         run: |
           cd backend
           set -o pipefail  # otherwise 'tee' will eat the exit code
+          # TODO: Switch away from using the ENVIRONMENT variable during pytest or for anything at runtime
+          export ENVIRONMENT=development
           poetry run pytest -n $(nproc) --color=yes --cov=linkpulse --cov-report=term-missing:skip-covered --junitxml=pytest.xml | tee pytest-coverage.txt
           
           # pytest-coverage-comment won't error if the files are missing
