@@ -1,5 +1,5 @@
 import Result, { ok, err } from "true-myth/result";
-import { useUserStore } from "./state";
+import { useUserStore } from "@/lib/state";
 
 // Authentication on the frontend is managed by Zustand's state.
 // Upon application load, a single request is made to acquire session state.
@@ -8,11 +8,10 @@ import { useUserStore } from "./state";
 // If any protected API call suddenly fails with a 401 status code, the user store is reset, a logout message is displayed, and the user is redirected to the login page.
 // All redirects to the login page will carry a masked URL parameter that can be used to redirect the user back to the page they were on after logging in.
 
-const TARGET = import.meta.env.DEV
+const TARGET = !import.meta.env.DEV
   ? `http://${import.meta.env.VITE_BACKEND_TARGET}`
   : "";
 
-console.log({ env: import.meta.env, target: TARGET });
 type ErrorResponse = {
   detail: string;
 };
@@ -21,6 +20,14 @@ type SessionResponse = {
   user: {};
 };
 
+/**
+ * Retrieves the current session from the server.
+ *
+ * An Ok result will contain the session data, implying that the session is valid and the user is authenticated.
+ * An Err result will contain an error response, implying that the session is invalid or non-existent, and the user is not authenticated.
+ *
+ * @returns {Promise<Result<SessionResponse, ErrorResponse>>} A promise that resolves to a Result object containing either the session data or an error response.
+ */
 export const getSession = async (): Promise<
   Result<SessionResponse, ErrorResponse>
 > => {
@@ -33,6 +40,16 @@ export const getSession = async (): Promise<
     useUserStore.getState().logout();
     const error = await response.json();
     return err({ detail: error.detail });
+  }
+};
+
+export const isAuthenticated = async (): Promise<boolean> => {
+  let state = useUserStore.getState();
+
+  if (state.initialized) return state.user !== null;
+  else {
+    const result = await getSession();
+    return result.isOk;
   }
 };
 

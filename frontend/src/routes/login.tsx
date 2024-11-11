@@ -1,14 +1,14 @@
-import { useUserStore } from "@/lib/state";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 
 import { LoginForm } from "@/components/auth/form";
 import AuthenticationPage from "@/components/pages/authentication";
+import { isAuthenticated } from "@/lib/auth";
 
 export const Route = createFileRoute("/login")({
   beforeLoad: async ({ location }) => {
-    const isLoggedIn = useUserStore.getState().user !== null;
+    const authenticated = await isAuthenticated();
 
-    if (isLoggedIn) {
+    if (authenticated) {
       return redirect({
         to: "/dashboard",
         search: { redirect: location.href },

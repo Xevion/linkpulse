@@ -5,7 +5,7 @@ import structlog
 from fastapi import APIRouter, Depends, Response, status
 from linkpulse.dependencies import RateLimiter, SessionDependency
 from linkpulse.models import Session, User
-from linkpulse.utilities import utc_now
+from linkpulse.utilities import utc_now, is_development
 from pwdlib import PasswordHash
 from pwdlib.hashers.argon2 import Argon2Hasher
 from pydantic import BaseModel, EmailStr, Field
@@ -109,7 +109,8 @@ async def login(body: LoginBody, response: Response):
     )
 
     # Set Cookie of session token
-    response.set_cookie("session", token, samesite="strict", max_age=int(session_duration.total_seconds()))
+    max_age = int(session_duration.total_seconds())
+    response.set_cookie("session", token, max_age=max_age, secure=not is_development, httponly=True)
     return {"email": user.email, "expiry": session.expiry}
 
 

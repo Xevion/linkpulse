@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { login } from "@/lib/auth";
+import { useUserStore } from "@/lib/state";
 import { cn } from "@/lib/utils";
 import { Link } from "@tanstack/react-router";
 import { HTMLAttributes, SyntheticEvent, useState } from "react";
@@ -38,7 +39,7 @@ export function RegisterForm({ className, ...props }: UserAuthFormProps) {
               disabled={isLoading}
             />
           </div>
-          <Button disabled={isLoading}>
+          <Button disabled={isLoading || true}>
             {isLoading && (
               <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
             )}
@@ -52,6 +53,7 @@ export function RegisterForm({ className, ...props }: UserAuthFormProps) {
 
 export function LoginForm({ className, ...props }: UserAuthFormProps) {
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const { setUser } = useUserStore();
 
   async function onSubmit(event: SyntheticEvent) {
     event.preventDefault();
@@ -61,7 +63,11 @@ export function LoginForm({ className, ...props }: UserAuthFormProps) {
 
     setIsLoading(true);
     const result = await login(email, password);
-    console.log({ result });
+    if (result.isOk) {
+      setUser(result.value);
+    } else {
+      alert("Login failed");
+    }
     setIsLoading(false);
   }
 
