@@ -15,6 +15,7 @@ logger = structlog.get_logger()
 router = APIRouter()
 
 hasher = PasswordHash([Argon2Hasher()])
+# cspell: disable
 dummy_hash = (
     "$argon2id$v=19$m=65536,t=3,p=4$Ii3hm5/NqcJddQDFK24Wtw$I99xV/qkaLROo0VZcvaZrYMAD9RTcWzxY5/RbMoRLQ4"
 )

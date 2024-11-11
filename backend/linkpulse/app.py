@@ -55,16 +55,19 @@ logger = structlog.get_logger()
 if is_development:
     from fastapi.middleware.cors import CORSMiddleware
 
+    origins = [
+        "http://localhost",
+        "http://localhost:5173",
+    ]
+
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=[
-            "http://localhost",
-            "http://localhost:5173",
-        ],
+        allow_origins=origins,
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
     )
+    logger.info("CORS Enabled", origins=origins)
 
 app.add_middleware(LoggingMiddleware)
 app.add_middleware(CorrelationIdMiddleware)
