@@ -8,10 +8,6 @@ import { useUserStore } from "@/lib/state";
 // If any protected API call suddenly fails with a 401 status code, the user store is reset, a logout message is displayed, and the user is redirected to the login page.
 // All redirects to the login page will carry a masked URL parameter that can be used to redirect the user back to the page they were on after logging in.
 
-const TARGET = !import.meta.env.DEV
-  ? `http://${import.meta.env.VITE_BACKEND_TARGET}`
-  : "";
-
 type ErrorResponse = {
   detail: string;
 };
@@ -31,7 +27,7 @@ type SessionResponse = {
 export const getSession = async (): Promise<
   Result<SessionResponse, ErrorResponse>
 > => {
-  const response = await fetch(TARGET + "/api/session");
+  const response = await fetch("/api/session");
   if (response.ok) {
     const user = await response.json();
     useUserStore.getState().setUser(user);
@@ -62,7 +58,7 @@ export const login = async (
   email: string,
   password: string,
 ): Promise<Result<LoginResponse, ErrorResponse>> => {
-  const response = await fetch(TARGET + "/api/login", {
+  const response = await fetch("/api/login", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
