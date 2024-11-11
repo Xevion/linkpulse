@@ -1,10 +1,12 @@
 import { useUserStore } from "@/lib/state";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 
-import { LoginForm } from "@/components/auth/form";
-import AuthenticationPage from "@/components/pages/authentication";
+import { RegisterForm } from "@/components/auth/form";
+import AuthenticationPage, {
+  AgreementText,
+} from "@/components/pages/authentication";
 
-export const Route = createFileRoute("/login")({
+export const Route = createFileRoute("/register")({
   beforeLoad: async ({ location }) => {
     const isLoggedIn = useUserStore.getState().user !== null;
 
@@ -15,20 +17,23 @@ export const Route = createFileRoute("/login")({
       });
     }
   },
-  component: Login,
+  component: Register,
 });
 
-function Login() {
+function Register() {
   return (
     <AuthenticationPage>
       <div className="mx-auto flex w-full flex-col space-y-6 sm:w-[350px]">
         <div className="flex flex-col space-y-2 text-center">
-          <h1 className="text-2xl font-semibold tracking-tight">Login</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">
+            Create an account
+          </h1>
           <p className="text-sm text-muted-foreground">
-            Enter your email below to login
+            Enter your email below to create your account
           </p>
         </div>
-        <LoginForm />
+        <RegisterForm />
+        <AgreementText />
       </div>
     </AuthenticationPage>
   );

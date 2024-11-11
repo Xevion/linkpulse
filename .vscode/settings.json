@@ -37,7 +37,8 @@
     "timestamper",
     "tseslint",
     "vitest",
-    "xdist"
+    "xdist",
+    "Zustand's"
   ],
   "python.analysis.extraPaths": ["./backend/"],
   "editor.formatOnSave": true,
