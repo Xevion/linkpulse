@@ -23,9 +23,9 @@ function Login() {
     <AuthenticationPage>
       <div className="mx-auto flex w-full flex-col space-y-6 sm:w-[350px]">
         <div className="flex flex-col space-y-2 text-center">
-          <h1 className="text-2xl font-semibold tracking-tight">Login</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Sign In</h1>
           <p className="text-sm text-muted-foreground">
-            Enter your email below to login
+            Enter your email & password below to login
           </p>
         </div>
         <LoginForm />

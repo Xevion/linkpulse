@@ -35,3 +35,30 @@ export const getSession = async (): Promise<
     return err({ detail: error.detail });
   }
 };
+
+type LoginResponse = {
+  email: string;
+  expiry: string;
+};
+
+export const login = async (
+  email: string,
+  password: string,
+): Promise<Result<LoginResponse, ErrorResponse>> => {
+  const response = await fetch(TARGET + "/api/login", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ email, password }),
+  });
+
+  if (response.ok) {
+    const user = await response.json();
+    useUserStore.getState().setUser(user);
+    return ok(user);
+  } else {
+    const error = await response.json();
+    return err({ detail: error.detail });
+  }
+};

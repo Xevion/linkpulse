@@ -2,22 +2,22 @@ import { Icons } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { login } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 import { Link } from "@tanstack/react-router";
-import { HTMLAttributes, useState } from "react";
+import { HTMLAttributes, SyntheticEvent, useState } from "react";
 
 interface UserAuthFormProps extends HTMLAttributes<HTMLDivElement> {}
 
 export function RegisterForm({ className, ...props }: UserAuthFormProps) {
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  async function onSubmit(event: React.SyntheticEvent) {
+  async function onSubmit(event: SyntheticEvent) {
     event.preventDefault();
-    setIsLoading(true);
 
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 3000);
+    setIsLoading(true);
+    // await login()
+    setIsLoading(false);
   }
 
   return (
@@ -42,7 +42,7 @@ export function RegisterForm({ className, ...props }: UserAuthFormProps) {
             {isLoading && (
               <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
             )}
-            Sign In with Email
+            Create Account
           </Button>
         </div>
       </form>
@@ -53,13 +53,16 @@ export function RegisterForm({ className, ...props }: UserAuthFormProps) {
 export function LoginForm({ className, ...props }: UserAuthFormProps) {
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  async function onSubmit(event: React.SyntheticEvent) {
+  async function onSubmit(event: SyntheticEvent) {
     event.preventDefault();
-    setIsLoading(true);
 
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 3000);
+    const email = (event.target as HTMLFormElement).email.value;
+    const password = (event.target as HTMLFormElement).password.value;
+
+    setIsLoading(true);
+    const result = await login(email, password);
+    console.log({ result });
+    setIsLoading(false);
   }
 
   return (
@@ -67,15 +70,23 @@ export function LoginForm({ className, ...props }: UserAuthFormProps) {
       <form onSubmit={onSubmit}>
         <div className="grid gap-2">
           <div className="grid gap-1">
-            <Label className="sr-only" htmlFor="email">
-              Email
-            </Label>
+            <Label htmlFor="email">Email</Label>
             <Input
               id="email"
-              placeholder="name@example.com"
               type="email"
               autoCapitalize="none"
               autoComplete="email"
+              autoCorrect="off"
+              disabled={isLoading}
+            />
+          </div>
+          <div className="grid gap-1">
+            <Label htmlFor="email">Password</Label>
+            <Input
+              id="password"
+              type="password"
+              autoCapitalize="none"
+              autoComplete="current-password"
               autoCorrect="off"
               disabled={isLoading}
             />
@@ -84,13 +95,13 @@ export function LoginForm({ className, ...props }: UserAuthFormProps) {
             {isLoading && (
               <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
             )}
-            Sign In
+            Login
           </Button>
         </div>
       </form>
       <p className="text-center text-sm text-muted-foreground">
         <Link
-          href="/terms"
+          to="/register"
           className="underline underline-offset-4 hover:text-primary"
         >
           Register
