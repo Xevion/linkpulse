@@ -5,6 +5,37 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0]
+
+## Added
+
+- A release checklist to the `CHANGELOG.md` file, as a reminder for procedure.
+- An action workflow for invoking `pytest`, with coverage report generation in CI/CD
+- backend: Login & Logout routes
+- backend: Rate Limiting via custom `RateLimiter` dependency
+- backend: `User` model, `Session` model with migration script
+- backend: `Session` model constraints for `token` length, `expiry` & `last_used` timestamps
+- backend: `SessionDependency` for easy session validation, enforcement & handling per route
+- backend: provided `LOG_JSON_FORMAT` and `LOG_LEVEL` environment variable defaults in `run.sh` development script
+- backend: Simple `/health` & `/api/migrations` endpoint tests
+- backend: `utc_now` helper function
+- backend: `pwdlib[argon2]`, `pytest` (`pytest-cov`, `pytest-xdist`), `limits`, `httpx`, `email-validator` pacakges
+- frontend: Re-initialized with `vite` template, setup `@tanstack/router` & `shadcn` components.
+- frontend: Added Login & Register page, added basic authentication check with redirect
+- frontend: Added Zustand state management, basic login & session API functions with `true-myth` types.
+- frontend: Added `zustand`, `true-myth`, `@tanstack/router`, `clsx`, `tailwind-merge` packages
+
+## Changed
+
+- Set `black` formatter line length to 120 characters
+- backend: migration squashing threshold to 15
+- backend: moved top level `app` routes to `router.misc`
+
+## Removed
+
+- frontend: Most old packages from initial `vite` template
+- backend: `IPAddress` Model (definition + DB state via migration) & all related code
+
 ## [0.2.2] - 2024-11-01
 
 ### Added

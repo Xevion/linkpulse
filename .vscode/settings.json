@@ -1,18 +1,65 @@
 {
   "cSpell.words": [
     "apscheduler",
+    "Avenir",
+    "backref",
     "bpython",
     "Callsite",
+    "clsx",
     "excepthook",
+    "httpx",
+    "humanfs",
+    "humanwhocodes",
     "inmemory",
+    "jridgewell",
     "linkpulse",
     "migratehistory",
     "Nixpacks",
+    "nkzw",
+    "nocheck",
     "ORJSON",
+    "pacakges",
+    "pext",
+    "postcss",
+    "pwdlib",
+    "pyproject",
+    "pytest",
     "pytz",
+    "riscv",
+    "rollup",
+    "rtype",
+    "shadcn",
     "starlette",
     "structlog",
-    "timestamper"
+    "sugarss",
+    "tailwindcss",
+    "tanstack",
+    "timestamper",
+    "tseslint",
+    "vitest",
+    "xdist",
+    "Zustand's"
   ],
-  "python.analysis.extraPaths": ["./backend/"]
+  "python.analysis.extraPaths": ["./backend/"],
+  "editor.formatOnSave": true,
+  "[github-actions-workflow]": {
+    "editor.formatOnSave": false
+  },
+  "python.analysis.diagnosticMode": "workspace",
+  "cSpell.ignorePaths": [
+    "package-lock.json",
+    "node_modules",
+    "vscode-extension",
+    ".git/objects",
+    ".vscode",
+    ".vscode-insiders",
+    "settings.json",
+    "*.lock",
+    "*lock.*",
+    "package.json",
+    "routeTree.gen.ts"
+  ],
+  "files.associations": {
+    "Caddyfile.*": "caddyfile"
+  }
 }

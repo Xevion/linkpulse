@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "linkpulse"
-version = "0.2.2"
+version = "0.3.0"
 description = ""
 authors = ["Xevion <xevion@xevion.dev>"]
 license = "GNU GPL v3"
@@ -28,13 +28,23 @@ uvicorn = "^0.32.0"
 asgi-correlation-id = "^4.3.4"
 orjson = "^3.10.10"
 hypercorn = "^0.17.3"
+pwdlib = {extras = ["argon2"], version = "^0.2.1"}
+pytest-xdist = "^3.6.1"
+email-validator = "^2.2.0"
+limits = "^3.13.0"
 
 
 [tool.poetry.group.dev.dependencies]
 memory-profiler = "^0.61.0"
 bpython = "^0.24"
 types-pytz = "^2024.2.0.20241003"
+pytest = "^8.3.3"
+httpx = "^0.27.2"
+pytest-cov = "^6.0.0"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 110

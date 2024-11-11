@@ -1,58 +1,52 @@
 {
-    "name": "linkpulse",
-    "version": "0.0.1",
-    "author": "Xevion <xevion@xevion.dev>",
-    "type": "module",
-    "engines": {
-      "node": ">=22.0.0",
-      "pnpm": ">=9.0.0"
-    },
-    "dependencies": {
-      "react": "^18.3.1",
-      "react-dom": "^18.3.1"
-    },
-    "devDependencies": {
-      "@ianvs/prettier-plugin-sort-imports": "^4.2.1",
-      "@nkzw/eslint-config": "^1.16.0",
-      "@swc/core": "^1.6.5",
-      "@types/node": "^20.14.8",
-      "@types/react": "^18.3.3",
-      "@types/react-dom": "^18.3.0",
-      "@vitejs/plugin-react": "^4.3.1",
-      "autoprefixer": "^10.4.19",
-      "eslint": "^8.57.0",
-      "npm-run-all2": "^6.2.0",
-      "postcss": "^8.4.38",
-      "prettier": "^3.3.2",
-      "prettier-plugin-tailwindcss": "^0.6.5",
-      "tailwindcss": "^3.4.4",
-      "ts-node": "^10.9.2",
-      "typescript": "^5.5.2",
-      "vite": "^5.3.1",
-      "vitest": "^1.6.0"
-    },
-    "scripts": {
-      "preinstall": "command -v git >/dev/null 2>&1 && git config core.hooksPath git-hooks || true",
-      "build": "vite build",
-      "dev:update-deps": "rm -rf pnpm-lock.yaml node_modules/ **/node_modules && pnpm install",
-      "dev": "vite dev",
-      "format": "prettier --write .",
-      "lint:format": "prettier --cache --check .",
-      "lint": "eslint --cache .",
-      "test": "npm-run-all --parallel tsc:check vitest:run lint lint:format",
-      "tsc:check": "tsc",
-      "vitest:run": "vitest run"
-    },
-    "browserslist": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "pnpm": {
-      "updateConfig": {
-        "ignoreDependencies": [
-          "eslint"
-        ]
-      }
-    }
+  "name": "linkpulse",
+  "private": true,
+  "version": "0.3.0",
+  "author": {
+    "name": "Xevion",
+    "url": "https://xevion.dev",
+    "email": "xevion@xevion.dev"
+  },
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@radix-ui/react-label": "^2.1.0",
+    "@radix-ui/react-slot": "^1.1.0",
+    "@tanstack/react-router": "^1.81.1",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.456.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "tailwind-merge": "^2.5.4",
+    "tailwindcss-animate": "^1.0.7",
+    "true-myth": "^8.0.1",
+    "zustand": "^5.0.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.13.0",
+    "@tanstack/router-devtools": "^1.81.1",
+    "@tanstack/router-plugin": "^1.79.0",
+    "@types/node": "^22.9.0",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react-swc": "^3.5.0",
+    "autoprefixer": "^10.4.20",
+    "eslint": "^9.13.0",
+    "eslint-plugin-react-hooks": "^5.0.0",
+    "eslint-plugin-react-refresh": "^0.4.14",
+    "globals": "^15.11.0",
+    "postcss": "^8.4.47",
+    "prettier": "^3.3.3",
+    "tailwindcss": "^3.4.14",
+    "typescript": "~5.6.2",
+    "typescript-eslint": "^8.11.0",
+    "vite": "^5.4.10",
+    "vitest": "^2.1.4"
   }
+}

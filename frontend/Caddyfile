@@ -16,7 +16,10 @@
 # site block, listens on the $PORT environment variable, automatically assigned by railway
 :{$PORT} {
 	respond /health 200
-	encode gzip
+	encode {
+		zstd fastest
+		gzip 3
+	}
 
 	log {
 		# access logs

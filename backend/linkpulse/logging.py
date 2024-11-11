@@ -31,12 +31,12 @@ def drop_color_message_key(_: Any, __: Any, event_dict: EventDict) -> EventDict:
     return event_dict
 
 
-def setup_logging(
-    json_logs: Optional[bool] = None, log_level: Optional[str] = None
-) -> None:
+def setup_logging(json_logs: Optional[bool] = None, log_level: Optional[str] = None) -> None:
     # Pull from environment variables, apply defaults if not set
-    json_logs = json_logs or os.getenv("LOG_JSON_FORMAT", "true").lower() == "true"
-    log_level = log_level or os.getenv("LOG_LEVEL", "INFO")
+    if json_logs is None:
+        json_logs = os.getenv("LOG_JSON_FORMAT", "true").lower() == "true"
+    if log_level is None:
+        log_level = os.getenv("LOG_LEVEL", "INFO")
 
     def flatten(n):
         """
@@ -158,8 +158,6 @@ def setup_logging(
             sys.__excepthook__(exc_type, exc_value, exc_traceback)
             return
 
-        root_logger.error(
-            "Uncaught exception", exc_info=(exc_type, exc_value, exc_traceback)
-        )
+        root_logger.error("Uncaught exception", exc_info=(exc_type, exc_value, exc_traceback))
 
     sys.excepthook = handle_exception

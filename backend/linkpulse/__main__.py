@@ -16,17 +16,18 @@ setup_logging()
 
 import os
 import sys
-import structlog
 
+import structlog
 
 logger = structlog.get_logger()
 
 
-def main(*args):
-    """
-    Primary entrypoint for the LinkPulse application
-    - Don't import any modules globally unless you're certain it's necessary. Imports should be tightly controlled.
-    """
+def main(*args: str) -> None:
+    """Primary entrypoint for the LinkPulse application
+    NOTE: Don't import any modules globally unless you're certain it's necessary. Imports should be tightly controlled.
+    :param args: The command-line arguments to parse and execute.
+    :type args: str"""
+
     if args[0] == "serve":
         from linkpulse.utilities import is_development
         from uvicorn import run
@@ -57,9 +58,9 @@ def main(*args):
 
         # import most useful objects, models, and functions
         lp = linkpulse  # alias
-        from linkpulse.utilities import get_db
         from linkpulse.app import app
-        from linkpulse.models import BaseModel, IPAddress
+        from linkpulse.models import BaseModel, Session, User
+        from linkpulse.utilities import get_db
 
         db = get_db()
 

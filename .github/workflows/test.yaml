@@ -1,0 +1,83 @@
+name: Pytest
+
+on: [pull_request]
+
+# https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs
+# Required by MishaKav/pytest-coverage-comment
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+
+env:
+  POETRY_VERSION: 1.8.4
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up python
+        id: setup-python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12.7"
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: ${{ env.POETRY_VERSION }}
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Load cached venv
+        id: cached-pip-wheels
+        uses: actions/cache@v4
+        with:
+          # TODO: Apparently this is failing for some reason, path does not exist? Fix after 0.3.0 release
+          path: .venv  # While ~/.cache is a fine default, I want to separate this cache from other caches
+          key: venv-${{ steps.setup-python.outputs.python-version }}-${{ env.POETRY_VERSION }}-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Install dependencies
+        run: cd backend && poetry install --no-interaction --no-root
+      
+      # Disable for now, remove if ultimately not needed.
+      # - name: Install library
+      #   run: cd backend && poetry install --no-interaction
+      
+      - name: Acquire Database URL from Railway
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          SERVICE_ID: Postgres
+          ENVIRONMENT_ID: development
+        run: |
+          bash <(curl -fsSL cli.new) --verbose --yes
+          DATABASE_URL=$(railway variables --service $SERVICE_ID --environment $ENVIRONMENT_ID --json | jq -cMr .DATABASE_PUBLIC_URL)
+          echo "::add-mask::$DATABASE_URL"
+          echo "DATABASE_URL=$DATABASE_URL" >> "$GITHUB_ENV"
+
+      - name: Pytest
+        env:
+          LOG_LEVEL: DEBUG
+          LOG_JSON_FORMAT: false
+        run: |
+          cd backend
+          set -o pipefail  # otherwise 'tee' will eat the exit code
+          # TODO: Switch away from using the ENVIRONMENT variable during pytest or for anything at runtime
+          export ENVIRONMENT=development
+          poetry run pytest -n $(nproc) --color=yes --cov=linkpulse --cov-report=term-missing:skip-covered --junitxml=pytest.xml | tee pytest-coverage.txt
+          
+          # pytest-coverage-comment won't error if the files are missing
+          if [ ! -f ./pytest-coverage.txt ] || [ ! -f ./pytest.xml ]; then
+            echo "::error::Coverage files not found"
+            exit 1
+          fi
+
+      - name: Pytest coverage comment
+        id: coverageComment
+        uses: MishaKav/pytest-coverage-comment@main
+        with:
+          pytest-coverage-path: backend/pytest-coverage.txt
+          junitxml-path: backend/pytest.xml
