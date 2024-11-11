@@ -3,7 +3,7 @@ from typing import Annotated, Optional, Tuple
 
 import structlog
 from fastapi import APIRouter, Depends, Response, status
-from linkpulse.dependencies import RateLimiter, SessionDependency, SessionModel
+from linkpulse.dependencies import RateLimiter, SessionDependency
 from linkpulse.models import Session, User
 from linkpulse.utilities import utc_now
 from pwdlib import PasswordHash
@@ -126,7 +126,7 @@ async def logout(
         count = Session.delete().where(Session.user == session.user).execute()
         logger.debug("All sessions deleted", user=session.user.email, count=count, source_token=session.token)
 
-    response.delete_cookie("session", "", max_age=0)
+    response.delete_cookie("session")
 
 
 @router.post("/api/register")
@@ -141,13 +141,17 @@ async def register():
 
 
 @router.get("/api/session")
-async def session(session: Annotated[SessionModel, Depends(SessionDependency(required=True))]):
+async def session(session: Annotated[Session, Depends(SessionDependency(required=True))]):
     # Returns the session information for the current session
-    return {}
+    return {
+        "user": {
+            "email": session.user.email,
+        }
+    }
 
 
 @router.get("/api/sessions")
-async def sessions(session: Annotated[SessionModel, Depends(SessionDependency(required=True))]):
+async def sessions(session: Annotated[Session, Depends(SessionDependency(required=True))]):
     # Returns a list of all active sessions for this user
     return {}
 

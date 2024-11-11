@@ -44,13 +44,6 @@ class RateLimiter:
         return True
 
 
-@dataclass
-class SessionModel:
-    user_id: str
-    session_id: str
-    expires_at: int
-
-
 class SessionDependency:
     def __init__(self, required: bool = False):
         self.required = required
