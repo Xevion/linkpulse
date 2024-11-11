@@ -1,11 +1,13 @@
 {
   "cSpell.words": [
     "apscheduler",
+    "Avenir",
     "backref",
     "bpython",
     "Callsite",
     "clsx",
     "excepthook",
+    "httpx",
     "humanfs",
     "humanwhocodes",
     "inmemory",
@@ -14,7 +16,9 @@
     "migratehistory",
     "Nixpacks",
     "nkzw",
+    "nocheck",
     "ORJSON",
+    "pacakges",
     "pext",
     "postcss",
     "pwdlib",
@@ -24,12 +28,16 @@
     "riscv",
     "rollup",
     "rtype",
+    "shadcn",
     "starlette",
     "structlog",
     "sugarss",
     "tailwindcss",
+    "tanstack",
     "timestamper",
-    "vitest"
+    "tseslint",
+    "vitest",
+    "xdist"
   ],
   "python.analysis.extraPaths": ["./backend/"],
   "editor.formatOnSave": true,
@@ -47,6 +55,7 @@
     "settings.json",
     "*.lock",
     "*lock.*",
-    "package.json"
+    "package.json",
+    "routeTree.gen.ts"
   ]
 }
