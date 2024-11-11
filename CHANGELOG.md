@@ -27,11 +27,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Set `black` formatter line length to 120 characters
 - backend: migration squashing threshold to 15
 - backend: moved top level `app` routes to `router.misc`
-- frontend: Updated `eslint` to `9.x.x`, `@types/node` to `22.9.x`
 
 ## Removed
 
-- frontend: Removed `@nkzw/eslint-config` package
+- frontend: Most old packages from initial `vite` template
 - backend: `IPAddress` Model (definition + DB state via migration) & all related code
 
 ## [0.2.2] - 2024-11-01
