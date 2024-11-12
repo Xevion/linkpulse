@@ -1,5 +1,7 @@
 # linkpulse
 
+[![wakatime](https://wakatime.com/badge/github/Xevion/linkpulse.svg)](https://wakatime.com/badge/github/Xevion/linkpulse)
+
 A project for monitoring websites, built with FastAPI and React.
 
 ## Structure
