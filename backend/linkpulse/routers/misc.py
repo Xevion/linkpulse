@@ -1,14 +1,40 @@
 """Miscellaneous endpoints for the Linkpulse API."""
 
+from pathlib import Path
 from typing import Any
 
+import structlog
+import toml
 from fastapi import APIRouter
 from fastapi_cache.decorator import cache
 from linkpulse.utilities import get_db
 
+logger = structlog.get_logger(__name__)
+
 router = APIRouter()
 
 db = get_db()
+
+
+@router.get("/api/version")
+@cache(expire=None)
+async def version() -> dict[str, str]:
+    """Get the version of the API.
+    :return: The version of the API.
+    :rtype: dict[str, str]
+    """
+
+    pyproject_path = Path(__file__).parent.parent.parent / "pyproject.toml"
+
+    version = "unknown"
+    if pyproject_path.exists() and pyproject_path.is_file():
+        data = toml.load(pyproject_path)
+        version = data["tool"]["poetry"]["version"]
+        logger.debug("Version loaded from pyproject.toml", version=version)
+    else:
+        version = "error"
+
+    return {"version": version}
 
 
 @router.get("/health")

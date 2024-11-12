@@ -5,7 +5,7 @@ description = ""
 authors = ["Xevion <xevion@xevion.dev>"]
 license = "GNU GPL v3"
 readme = "README.md"
-package-mode = false
+package-mode = true
 
 [tool.poetry.scripts]
 app = "linkpulse"
@@ -32,6 +32,8 @@ pwdlib = {extras = ["argon2"], version = "^0.2.1"}
 pytest-xdist = "^3.6.1"
 email-validator = "^2.2.0"
 limits = "^3.13.0"
+toml = "^0.10.2"
+types-toml = "^0.10.8.20240310"
 
 
 [tool.poetry.group.dev.dependencies]

@@ -1,6 +1,6 @@
 # linkpulse
 
-[![wakatime](https://wakatime.com/badge/github/Xevion/linkpulse.svg)](https://wakatime.com/badge/github/Xevion/linkpulse)
+![Website Status](https://img.shields.io/website?url=https%3A%2F%2Flinkpulse.xevion.dev&up_message=online&down_message=down&label=linkpulse) ![Python Version](https://img.shields.io/badge/python-3.12-blue) ![Dynamic JSON Badge](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Flinkpulse.xevion%2Fdev%2Fapi%2Fversion&query=%24.version&label=version) [![wakatime](https://wakatime.com/badge/github/Xevion/linkpulse.svg)](https://wakatime.com/badge/github/Xevion/linkpulse)
 
 A project for monitoring websites, built with FastAPI and React.
 
