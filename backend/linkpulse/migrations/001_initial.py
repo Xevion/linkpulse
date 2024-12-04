@@ -39,8 +39,13 @@ def migrate(migrator: Migrator, database: pw.Database, *, fake=False):
     
     @migrator.create_model
     class IPAddress(pw.Model):
-        ip = pw.CharField(max_length=255, primary_key=True)
-        lastSeen = pw.DateTimeField()
+
+        """wrote a generic script... hope one of you can test it for me bc its still not working on my machine"""
+        ip = pw.CharField(max_length=255, primary_key=True, help_text="The IP address (primary key).")
+        lastSeen = pw.DateTimeField(help_text="Timestamp of the last activity from this IP address.")
+        location = pw.CharField(max_length=100, null=True, help_text="Optional location information.")
+        is_blocked = pw.BooleanField(default=False, help_text="Indicates whether the IP is blocked.")
+        created_at = pw.DateTimeField(constraints=[pw.SQL("DEFAULT CURRENT_TIMESTAMP")], help_text="Record creation time.")
 
         class Meta:
             table_name = "ipaddress"

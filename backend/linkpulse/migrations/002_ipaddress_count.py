@@ -25,25 +25,30 @@ Some examples (model - class or model name)::
 """
 
 from contextlib import suppress
-
 import peewee as pw
 from peewee_migrate import Migrator
-
 
 with suppress(ImportError):
     import playhouse.postgres_ext as pw_pext
 
 
 def migrate(migrator: Migrator, database: pw.Database, *, fake=False):
-    """Write your migrations here."""
-    
+    """
+    Add a 'count' field to the 'ipaddress' table.
+
+    The new field:
+    - Name: count
+    - Type: IntegerField
+    - Default: 0
+    """
     migrator.add_fields(
         'ipaddress',
-
-        count=pw.IntegerField(default=0))
+        count=pw.IntegerField(default=0)
+    )
 
 
 def rollback(migrator: Migrator, database: pw.Database, *, fake=False):
-    """Write your rollback migrations here."""
-    
+    """
+    Remove the 'count' field from the 'ipaddress' table.
+    """
     migrator.remove_fields('ipaddress', 'count')
